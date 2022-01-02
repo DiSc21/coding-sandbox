@@ -1,6 +1,6 @@
 #!/bin/bash
 
-path=$(dirname "${BAS_SOURCE[0]}")
+path=$(dirname "${BASH_SOURCE[0]}")
 dockerfile=$path/Dockerfile
 
 tag_long=$(sha256sum $dockerfile | awk '{ print $1 }')

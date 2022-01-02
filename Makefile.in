@@ -1,4 +1,4 @@
-cmd =${dir}/.docker/run_docker.sh
+cmd=${dir}/.docker/run_docker.sh
 
 test: build/main
 	${cmd} "cmake --build build -t test ARGS=-V"

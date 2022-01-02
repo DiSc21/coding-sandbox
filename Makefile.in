@@ -1,28 +1,30 @@
 cmd =${dir}/.docker/run_docker.sh
 
 test: build/main
-    ${cmd} "cmake --build build -t test ARGS=-V"
+	${cmd} "cmake --build build -t test ARGS=-V"
 
 build/main: ${code}
-    ${cmd} "cmake -Bbuild . ; cmake --build build"
+	${cmd} "cmake -Bbuild . ; cmake --build build"
 
 .PHONY: clean all into
 
-into: ${dir}/.docker/into.sh
+into:
+	${dir}/.docker/into.sh
 
-clean: ${cmd} "rm -rf build main"
+clean:
+	${cmd} "rm -rf build main"
 
 marp: $(marp_files).html
 
 %.html: %.md
-     ${cmd} "marp $<"
+	${cmd} "marp $<"
 
 show: $(marp_files).html
-    firefox &<
+	firefox &<
 
 con: $(marp_files).md
-    marp -pw &<
+	marp -pw &<
 
 pdf: $(marp_files).md
-    ${cmd} "marp --pdf --allow-local-files $<"
+	${cmd} "marp --pdf --allow-local-files $<"
 

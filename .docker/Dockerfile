@@ -28,8 +28,13 @@ RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - \
 RUN apt-get install -y --no-install-recommends --fix-missing rustc
 CMD ["rustc --version"]
 
+# install gtk3
+RUN apt-get install -y --no-install-recommends --fix-missing pkg-config libgtk-3-dev libgtkmm-3.0-dev libgstreamermm-1.0-dev
+RUN apt-get purge fcitx-module-dbus
+ENV PKG_CONFIG_PATH="/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/lib/x86_64-linux-gnu/gtkmm-3.0/include/:/usr/share/pkgconfig:${PKG_CONFIG_PATH}"
+
 # install marp
-RUN /bin/bash -c "cd /usr/bin/ && tar -xvz -f <(wget --no-check-certificate -q -O - https://github.com/marp-team/marp-cli/releases/download/v1.4.2/marp-cli-v1.4.2-linux.tar.gz)";
+#RUN /bin/bash -c "cd /usr/bin/ && tar -xvz -f <(wget --no-check-certificate -q -O - https://github.com/marp-team/marp-cli/releases/download/v1.4.2/marp-cli-v1.4.2-linux.tar.gz)";
 
 CMD mkdir /ws/
 WORKDIR /ws/

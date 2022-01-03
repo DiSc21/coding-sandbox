@@ -1,13 +1,16 @@
 # search base directory containing Makefile.in
 dir:=$(shell dir=".."; while [ true ]; do ls $$dir | grep -q Makefile.in && break || dir="$$dir/.."; done; echo $$dir)
 
-all: create_build_dir build_n_execute
+all: clean create_build_dir build_test run 
 
 create_build_dir:
-	$(cmd) "rm -rf build; mkdir build;"
+	$(cmd) "mkdir build"
 
-build_n_execute:
-	$(cmd) "cd build; rustc ../test.rs; ./test"
+build_test:
+	$(cmd) "rustc ./test.rs --out-dir=./build"
+
+run:
+	$(cmd) "./build/test"
 
 include ${dir}/Makefile.in
 

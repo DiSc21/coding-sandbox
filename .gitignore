@@ -2,3 +2,6 @@ build
 
 jenkins/jenkins_home/*
 !jenkins/jenkins_home/.gitkeep
+
+jenkins/jenkins_ws/*
+!jenkins/jenkins_ws/.gitkeep

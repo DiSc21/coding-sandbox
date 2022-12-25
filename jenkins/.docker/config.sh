@@ -8,6 +8,3 @@ tag=${tag_long::8}
 name=jenkins_test
 
 dockername="$name:$tag"
-
-docker images | grep $name | grep $tag -q || DOCKER_BUILDIT=1 docker build -f $dockerfile -t $dockername .
-

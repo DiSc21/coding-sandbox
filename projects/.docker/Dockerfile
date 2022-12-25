@@ -49,5 +49,6 @@ ENV PKG_CONFIG_PATH="/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/lib/x86_64-linux-g
 
 CMD mkdir /ws/
 WORKDIR /ws/
+
 CMD ["echo DIRMAN SCHNELLER"]
 

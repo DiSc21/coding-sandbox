@@ -1,0 +1,12 @@
+[
+{
+  "directory": "/ws/build",
+  "command": "/usr/bin/c++ -Dsingleton_EXPORTS -I/ws/src -fPIC -std=c++17 -o CMakeFiles/singleton.dir/src/DS_Singleton.cpp.o -c /ws/src/DS_Singleton.cpp",
+  "file": "/ws/src/DS_Singleton.cpp"
+},
+{
+  "directory": "/ws/build",
+  "command": "/usr/bin/c++  -I/ws/src -std=c++17 -o CMakeFiles/main.dir/test/test.cpp.o -c /ws/test/test.cpp",
+  "file": "/ws/test/test.cpp"
+}
+]

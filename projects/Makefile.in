@@ -1,10 +1,11 @@
 cmd=${dir}/.docker/run_docker.sh
 
+
 test: build/main
 	${cmd} "cmake --build build -t test ARGS=-V"
 
 build/main:
-	${cmd} "cmake -Bbuild . ; cmake --build build"
+	${cmd} "cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -Bbuild . ; cmake --build build"; cp build/compile_commands.json .;
 
 .PHONY: clean all into
 

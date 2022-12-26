@@ -5,9 +5,9 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Building..'
-            sh '''#!/bin/bash
-                  cd projects/cpp && make creational 
-            '''
+                sh '''#!/bin/bash
+                      cd projects/cpp && make creational 
+                '''
             }
         }
         stage('Test') {

@@ -1,7 +1,0 @@
-[
-{
-  "directory": "/ws/build",
-  "command": "/usr/bin/c++  -I/ws/src -std=c++17 -o CMakeFiles/main.dir/test/test.cpp.o -c /ws/test/test.cpp",
-  "file": "/ws/test/test.cpp"
-}
-]

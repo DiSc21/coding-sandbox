@@ -10,6 +10,6 @@ docker run -i --rm --name coding_sandbox_docker \
     --user $(id -u) \
     --net=host \
     --env="DISPLAY" \
-    -v `pwd`:/ws/ \
-    $dockername /bin/bash -c "$@"
+    -v `pwd`:`pwd` \
+    $dockername /bin/bash -c "cd $(pwd); $@"
 

@@ -18,3 +18,8 @@ RUN groupadd -g 971 docker \
 
 USER jenkins
 RUN jenkins-plugin-cli --plugins "blueocean:1.26.0 docker-workflow:563.vd5d2e5c4007f"
+
+CMD mkdir /ws/
+WORKDIR /ws/
+
+CMD ["Hello world!"]

@@ -6,7 +6,7 @@ pipeline {
             steps {
                 echo 'Building..'
                 sh '''#!/bin/bash
-                      cd projects/cpp && make creational 
+                      cd projects/cpp/code_analysis && make clang-tidy
                 '''
             }
         }
@@ -19,6 +19,11 @@ pipeline {
             steps {
                 echo 'Deploying....'
             }
+        }
+    }
+    post {
+        always {
+            junit '**/projects/cpp/code_analysis/build/junit.xml'
         }
     }
 }

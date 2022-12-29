@@ -9,7 +9,7 @@ coverage: build
 coverage-cobertura: coverage
 	${cmd} "cd build; gcovr -r ../ . --exclude-throw-branches --exclude-unreachable-branches --xml -o example_cobertura_summary.xml"
 
-clang-tidy: build coverage-json
+clang-tidy: build coverage-cobertura
 	${cmd} "run-clang-tidy-14 -p build -header-filter=.* 2>&1 | tee -a build/clang_tidy_result; cd build; cat clang_tidy_result | sed 's/\x1B\[[0-9;]\{1,\}[A-Za-z]//g' | ../../../.docker/clang-tidy-to-junit.py /home/jarjar/Coding/DockerSandbox/projects/cpp/code_analysis/ > junit.xml"
 
 include ${dir}/Makefile.in

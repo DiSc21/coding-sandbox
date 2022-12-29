@@ -15,9 +15,9 @@ pipeline {
                 echo 'Testing..'
             }
         }
-        stage('Deploy') {
+        stage ('Extract test results') {
             steps {
-                echo 'Deploying....'
+                publishCoverage adapters: [cobertura('**/projects/cpp/code_analysis/build/example_cobertura_summary.xml')]
             }
         }
     }

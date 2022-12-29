@@ -20,6 +20,7 @@ USER jenkins
 RUN jenkins-plugin-cli --plugins "blueocean:1.26.0 docker-workflow:563.vd5d2e5c4007f"
 RUN jenkins-plugin-cli --plugins junit:1166.va_436e268e972
 RUN jenkins-plugin-cli --plugins code-coverage-api:3.4.1
+RUN jenkins-plugin-cli --plugins warnings-ng:9.22.0
 
 CMD mkdir /ws/
 WORKDIR /ws/

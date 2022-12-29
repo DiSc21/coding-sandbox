@@ -7,7 +7,7 @@ RUN apt-get update && apt-get install -y
 RUN apt-get install -y --no-install-recommends --fix-missing vim ninja-build curl gcc gnupg2 wget build-essential lsb-release software-properties-common
 
 # clang-tidy 13
-RUN apt-get update && apt-get install -y --fix-missing clang-tidy-13
+RUN apt-get update && apt-get install -y --fix-missing clang-tidy-14
 
 # llvm for clang format 14
 RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - \
@@ -28,6 +28,11 @@ RUN /bin/bash -c "mkdir -p /third_party/gtest && cd /third_party/gtest && \
     tar -xvz --strip 1 -f <(wget --no-check-certificate -q -O - https://github.com/google/googletest/archive/refs/tags/release-1.11.0.tar.gz) && \
     cmake -Bbuild -GNinja . && cmake --build build --target install && rm -rf /third_party/"
 
+ENV TZ=Europe/Berlin
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+RUN apt-get update && apt-get install -y --fix-missing tzdata
+
+RUN apt-get update && apt-get install -y --fix-missing lcov gcovr cppcheck
 
 # install rustc
 RUN apt-get install -y --no-install-recommends --fix-missing rustc

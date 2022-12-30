@@ -215,6 +215,8 @@ class NPCBuilder
 
     static std::shared_ptr<NPC> warrior(const std::string& name)
     {
+        int test = 10;
+        if(false) {int klaus = test/0;}
         return std::make_shared<NPC>(name, NPC::Type::WARRIOR);
     }
 

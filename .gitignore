@@ -1,5 +1,7 @@
 build
 build_clang
+results
+.results
 
 compile_commands.json
 

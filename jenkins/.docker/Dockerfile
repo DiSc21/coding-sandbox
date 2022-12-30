@@ -28,6 +28,9 @@ RUN jenkins-plugin-cli --plugins code-coverage-api:3.4.1
 # basically managing all the code-quality stuff, e.g. static code analysis and gcc/clang warnings
 RUN jenkins-plugin-cli --plugins warnings-ng:9.22.0
 
+# e.g. for gcovr generated coverage html
+RUN jenkins-plugin-cli --plugins htmlpublisher:1.31
+
 # just for a dirky dark look
 RUN jenkins-plugin-cli --plugins dark-theme:262.v0202a_4c8fb_6a
 

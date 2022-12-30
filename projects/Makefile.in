@@ -1,17 +1,30 @@
-cmd=${dir}/.docker/run_docker.sh
+cmd=${base_dir}/.docker/run_docker.sh
 
+.PHONY: build/clean
+build/clean: clean build/main test 
 
-test: build/main
+#--------------------------------
+# default build and  
+#--------------------------------
+.PHONY: build/main
+build/main:
+	${cmd} "cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -Bbuild . ; cmake --build build"; cp build/compile_commands.json .
+
+.PHONY: test
+test:
 	${cmd} "cmake --build build -t test ARGS=-V"
 
-build/main:
-	${cmd} "cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -Bbuild . ; cmake --build build"; cp build/compile_commands.json .;
+.PHONY: build/test
+build/test: build/main test
 
-.PHONY: clean all into
 
+#--------------------------------
+# cleaningup and going into docker
+#--------------------------------
+.PHONY: into
 into:
-	${dir}/.docker/into.sh
-
+	${base_dir}/.docker/into.sh
+.PHONY: clean
 clean:
-	${cmd} "rm -rf build"
+	${cmd} "rm -rf build; rm -rf build_clang"
 

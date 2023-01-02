@@ -1,21 +1,8 @@
 cmd=${base_dir}/.docker/run_docker.sh
 
-.PHONY: build/clean
-build/clean: clean build/main test 
-
-#--------------------------------
-# default build and  
-#--------------------------------
-.PHONY: build/main
-build/main:
-	${cmd} "cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -Bbuild . ; cmake --build build"; cp build/compile_commands.json .
-
-.PHONY: test
-test:
-	${cmd} "cmake --build build -t test ARGS=-V"
-
-.PHONY: build/test
-build/test: build/main test
+.PHONY: build/docker
+build/docker:
+	${cmd} "echo Welcome to Docker dude!"
 
 
 #--------------------------------

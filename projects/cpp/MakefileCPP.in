@@ -1,6 +1,25 @@
 # This is cpp makefile include shared by all cpp subprojects.
 # Note: the The `cmd` and `base_dir` variable is defined in 
 
+.PHONY: build/clean
+build/clean: clean build/main test 
+
+
+#--------------------------------
+# default builds and some testing
+#--------------------------------
+.PHONY: build/main
+build/main:
+	${cmd} "cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -Bbuild . ; cmake --build build"; cp build/compile_commands.json .
+
+.PHONY: test
+test: coverage
+	${cmd} "cmake --build build -t test ARGS=-V"
+
+.PHONY: build/test
+build/test: build/main test
+
+
 #--------------------------------
 # compiler specific build targets
 #--------------------------------
@@ -18,6 +37,10 @@ build/clang: clean/clang
 #--------------------------------
 .PHONY: coverage
 coverage:
+	${cmd} "gcovr -r ."
+
+.PHONY: coverage-html
+coverage-html:
 	${cmd} "cd build; gcovr -r ../ . --exclude-throw-branches --exclude-unreachable-branches --html --html-details -o example_html_details.html"
 
 .PHONY: coverage-cobertura
@@ -26,7 +49,7 @@ coverage-cobertura:
 
 .PHONY: cpp-check
 cpp-check:
-	${cmd} "cppcheck --xml --xml-version=2 ./src/ 2> build/cppcheck.xml"
+	${cmd} "cppcheck --force --verbose --check-config --enable=all --xml --xml-version=2 ./src/ 2> build/cppcheck.xml"
 
 .PHONY: clang-tidy
 clang-tidy:

@@ -12,9 +12,12 @@ fi
 csv_make_dirs=$(cd $abs_root_dir/projects/.docker; ./find_make_directories.sh $@)
 
 gcovr_filter_string=$(echo "$csv_make_dirs" | sed -r 's/[,]+/ --filter /g')
-gcovr_exclude_string=$(echo "$csv_make_dirs" | sed -r 's/[,]+/test --exclude /g')
+
+gcovr_exclude_string=$(echo "$csv_make_dirs" | sed -r 's/[,]+/\/test --exclude /g')
+gcovr_exclude_string=$gcovr_exclude_string"/test"
 
 gcovr_exclude_flags="--exclude-throw-branches --exclude-unreachable-branches"
+
 gcovr_flags="--filter ${gcovr_filter_string} --exclude ${gcovr_exclude_string} ${gcovr_exclude_flags}"
 run_cmd=${abs_root_dir}/projects/.docker/run_docker.sh
 

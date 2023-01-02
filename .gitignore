@@ -1,8 +1,10 @@
 build
 build_clang
+
 results
 .results
 
+.cache
 compile_commands.json
 
 jenkins/jenkins_home/*

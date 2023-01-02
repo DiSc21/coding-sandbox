@@ -2,7 +2,7 @@
 # Note: the The `cmd` and `base_dir` variable is defined in 
 
 .PHONY: build/clean
-build/clean: clean build/main test 
+build/clean: clean build/test 
 
 
 #--------------------------------
@@ -13,11 +13,11 @@ build/main:
 	${cmd} "cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -Bbuild . ; cmake --build build"; cp build/compile_commands.json .
 
 .PHONY: test
-test: coverage
+test:
 	${cmd} "cmake --build build -t test ARGS=-V"
 
 .PHONY: build/test
-build/test: build/main test
+build/test: build/main test coverage
 
 
 #--------------------------------
@@ -37,7 +37,7 @@ build/clang: clean/clang
 #--------------------------------
 .PHONY: coverage
 coverage:
-	${cmd} "gcovr -r ."
+	${cmd} "cd build; gcovr -r ../ . --exclude-throw-branches --exclude-unreachable-branches"
 
 .PHONY: coverage-html
 coverage-html:

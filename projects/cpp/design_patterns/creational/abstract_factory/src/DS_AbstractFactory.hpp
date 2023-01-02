@@ -43,8 +43,8 @@
 //
 //----------------------------------------------------------------------------------------------------
 
-#ifndef __DS_ABSTRACT_FACTORY__
-#define __DS_ABSTRACT_FACTORY__
+#ifndef DS_ABSTRACT_FACTORY_HPP
+#define DS_ABSTRACT_FACTORY_HPP
 
 #include <memory>
 #include <vector>
@@ -73,7 +73,16 @@ struct PlatformWidget
 class Widget_
 {
   public:
-    virtual PlatformWidget draw() const = 0;
+    [[nodiscard]] virtual auto draw() const -> PlatformWidget = 0;
+
+    Widget_()                     = default;
+    Widget_(const Widget_ &other) = default;
+    Widget_(Widget_&& other)      = default;
+
+    auto operator=(const Widget_& /*other*/) -> Widget_& = default;
+    auto operator=(Widget_&& /*other*/) noexcept -> Widget_& { return *this; }
+
+    virtual ~Widget_() = default;
 };
 
 
@@ -81,13 +90,13 @@ class Widget_
 class LinuxButton : public Widget_
 {
   public:
-    PlatformWidget draw() const final { return PlatformWidget({PlatformType::LINUX, WidgetType::BUTTON}); }
+    [[nodiscard]] auto draw() const -> PlatformWidget final { return PlatformWidget({PlatformType::LINUX, WidgetType::BUTTON}); }
 };
 /// @brief Concrete LINUX product MENU
 class LinuxMenu : public Widget_
 {
   public:
-    PlatformWidget draw() const final { return PlatformWidget({PlatformType::LINUX, WidgetType::MENU}); }
+    [[nodiscard]] auto draw() const -> PlatformWidget final { return PlatformWidget({PlatformType::LINUX, WidgetType::MENU}); }
 };
 
 
@@ -95,13 +104,13 @@ class LinuxMenu : public Widget_
 class WindowsButton : public Widget_
 {
   public:
-    PlatformWidget draw() const final { return PlatformWidget({PlatformType::WINDOWS, WidgetType::BUTTON}); }
+    [[nodiscard]] auto draw() const -> PlatformWidget final { return PlatformWidget({PlatformType::WINDOWS, WidgetType::BUTTON}); }
 };
 /// @brief Concrete WINDOWS product MENU
 class WindowsMenu : public Widget_
 {
   public:
-    PlatformWidget draw() const final { return PlatformWidget({PlatformType::WINDOWS, WidgetType::MENU}); }
+    [[nodiscard]] auto draw() const -> PlatformWidget final { return PlatformWidget({PlatformType::WINDOWS, WidgetType::MENU}); }
 };
 
 
@@ -109,22 +118,31 @@ class WindowsMenu : public Widget_
 class Factory_
 {
   public:
-    virtual std::shared_ptr<Widget_> create_button() const = 0;
-    virtual std::shared_ptr<Widget_> create_menu()   const = 0;
+    [[nodiscard]] virtual auto create_button() const -> std::shared_ptr<Widget_> = 0;
+    [[nodiscard]] virtual auto create_menu()   const -> std::shared_ptr<Widget_> = 0;
+
+    Factory_()                      = default;
+    Factory_(const Factory_ &other) = default;
+    Factory_(Factory_&& other)      = default;
+
+    auto operator=(const Factory_& /*other*/) -> Factory_& = default;
+    auto operator=(Factory_&& /*other*/) noexcept -> Factory_& { return *this; }
+
+    virtual ~Factory_() = default;
 };
 /// @brief a CONCRETE FACTORY corresponding to LINUX product family
 class LinuxFactory : public Factory_
 {
   public:
-    std::shared_ptr<Widget_> create_button() const final { return std::make_shared<LinuxButton>(); }
-    std::shared_ptr<Widget_> create_menu()   const final { return std::make_shared<LinuxMenu>();   }
+    [[nodiscard]] auto create_button() const -> std::shared_ptr<Widget_>  final { return std::make_shared<LinuxButton>(); }
+    [[nodiscard]] auto create_menu()   const -> std::shared_ptr<Widget_>  final { return std::make_shared<LinuxMenu>();   }
 };
 /// @brief a CONCRETE FACTORY corresponding to LINUX product family
 class WindowsFactory : public Factory_
 {
   public:
-    std::shared_ptr<Widget_> create_button() const final { return std::make_shared<WindowsButton>(); }
-    std::shared_ptr<Widget_> create_menu()   const final { return std::make_shared<WindowsMenu>();   }
+    [[nodiscard]] auto create_button() const -> std::shared_ptr<Widget_>  final { return std::make_shared<WindowsButton>(); }
+    [[nodiscard]] auto create_menu()   const -> std::shared_ptr<Widget_>  final { return std::make_shared<WindowsMenu>();   }
 };
 
 
@@ -139,9 +157,9 @@ class WindowsFactory : public Factory_
 class WidgetClient 
 {
   public:
-    WidgetClient(const std::shared_ptr<Factory_>& factory) : factory_(factory) {}
+    explicit WidgetClient(const std::shared_ptr<Factory_>& factory) : factory_(factory) {}
 
-    std::vector<PlatformWidget> display_window() 
+    [[nodiscard]] auto display_window() -> std::vector<PlatformWidget>
     {
        std::vector<std::shared_ptr<Widget_>> widgets = {
            factory_->create_button(),

@@ -43,10 +43,11 @@
 //
 //----------------------------------------------------------------------------------------------------
 
-#ifndef __DS_ARMOR__
-#define __DS_ARMOR__
+#ifndef DS_ARMOR_HPP
+#define DS_ARMOR_HPP
 
 #include <numeric>
+#include <algorithm>
 #include <memory>
 #include <set>
 #include <map>
@@ -70,15 +71,17 @@ class ArmorPart
     };
 
     ArmorPart() = delete;
-    ArmorPart(const Type type, const std::string& name = "", const uint8_t protection = 0)
-        : type_(type), name_(name), protection_(protection)
-    {}
 
-    bool operator<(const ArmorPart& rhs) const { return (type_  < rhs.type_);}
+    explicit ArmorPart(const Type type, std::string name = "", const uint8_t protection = 0)
+        : type_(type), name_(std::move(name)), protection_(protection) {}
 
-    Type        getType()       const { return type_; }
-    std::string getName()       const { return name_; }
-    uint8_t     getProtection() const { return protection_; }
+
+
+    [[nodiscard]] auto operator<(const ArmorPart& rhs) const -> bool { return (type_  < rhs.type_);}
+
+    [[nodiscard]] auto getType()       const -> Type        { return type_; }
+    [[nodiscard]] auto getName()       const -> std::string { return name_; }
+    [[nodiscard]] auto getProtection() const -> uint8_t     { return protection_; }
 
   private:
     const Type type_;
@@ -91,8 +94,9 @@ class ArmorPart
 class Armor
 {
   public:
-    Armor(){}
-    Armor(std::set<ArmorPart> parts)
+    Armor() = default;
+
+    explicit Armor(const std::set<ArmorPart>& parts)
     {
         for(const auto& part: parts)
         {
@@ -100,13 +104,13 @@ class Armor
         }
     }
 
-    uint8_t getTypeProtection(const ArmorPart::Type type) const
+    [[nodiscard]] auto getTypeProtection(const ArmorPart::Type type) const -> uint8_t
     {
         const auto& part_it = armor_parts_.find(type);
         return (part_it != armor_parts_.end()) ? part_it->second.getProtection() : 0;
     }
 
-    uint16_t getProtection() const
+    [[nodiscard]] auto getProtection() const -> uint8_t
     {
         return std::accumulate(std::begin(armor_parts_), std::end(armor_parts_), 0,
                                [](const std::uint16_t sum, const auto& part)
@@ -121,18 +125,33 @@ class Armor
 class ArmorBuilder_
 {
   public:
-    virtual Armor buildArmor() = 0;
+    [[nodiscard]] virtual auto buildArmor() -> Armor = 0;
+
+    ArmorBuilder_()                           = default;
+    ArmorBuilder_(const ArmorBuilder_& /*other*/) = default;
+    ArmorBuilder_(ArmorBuilder_&& /*other*/)      = default;
+
+    auto operator=(const ArmorBuilder_& /*other*/) -> ArmorBuilder_& = default;
+    auto operator=(ArmorBuilder_&& /*other*/) noexcept -> ArmorBuilder_& { return *this; }
+    virtual ~ArmorBuilder_() = default;
+
+    static const uint8_t MAGIC_1  =  1;
+    static const uint8_t MAGIC_3  =  3;
+    static const uint8_t MAGIC_4  =  4;
+    static const uint8_t MAGIC_5  =  5;
+    static const uint8_t MAGIC_7  =  6;
+    static const uint8_t MAGIC_12 = 12;
 };
 
 /// @brief a so-called CONCRETE BUILDER
 class ArmorBuilder_Civilian : public ArmorBuilder_
 {
   public:
-    Armor buildArmor()
+    [[nodiscard]] auto buildArmor() -> Armor override
     {
-        return Armor({ArmorPart(ArmorPart::Type::BODY,  "Plain Shirt", 1),
-                      ArmorPart(ArmorPart::Type::LEGS,  "Cloth trousers", 1),
-                      ArmorPart(ArmorPart::Type::FEET,  "Simple Shoes", 1)});
+        return Armor({ArmorPart(ArmorPart::Type::BODY,  "Plain Shirt",    MAGIC_1),
+                      ArmorPart(ArmorPart::Type::LEGS,  "Cloth trousers", MAGIC_1),
+                      ArmorPart(ArmorPart::Type::FEET,  "Simple Shoes",   MAGIC_1)});
     }
 };
 
@@ -140,13 +159,13 @@ class ArmorBuilder_Civilian : public ArmorBuilder_
 class ArmorBuilder_Warrior : public ArmorBuilder_
 {
   public:
-    Armor buildArmor()
+    [[nodiscard]] auto buildArmor() -> Armor override
     {
-        return Armor({ArmorPart(ArmorPart::Type::BODY,  "Leather Chest Protector", 12),
-                      ArmorPart(ArmorPart::Type::HEAD,  "Leather Helmet", 7),
-                      ArmorPart(ArmorPart::Type::LEGS,  "Bavarian Leather Trousers", 5),
-                      ArmorPart(ArmorPart::Type::HANDS, "Leather Gloves", 4),
-                      ArmorPart(ArmorPart::Type::FEET,  "Leather Boots", 3)});
+        return Armor({ArmorPart(ArmorPart::Type::BODY,  "Leather Chest Protector",   MAGIC_12),
+                      ArmorPart(ArmorPart::Type::HEAD,  "Leather Helmet",            MAGIC_7),
+                      ArmorPart(ArmorPart::Type::LEGS,  "Bavarian Leather Trousers", MAGIC_5),
+                      ArmorPart(ArmorPart::Type::HANDS, "Leather Gloves",            MAGIC_4),
+                      ArmorPart(ArmorPart::Type::FEET,  "Leather Boots",             MAGIC_3)});
     }
 };
 
@@ -154,12 +173,12 @@ class ArmorBuilder_Warrior : public ArmorBuilder_
 class ArmorBuilder_Wizard : public ArmorBuilder_
 {
   public:
-    Armor buildArmor()
+    [[nodiscard]] auto buildArmor() -> Armor override
     {
-        return Armor({ArmorPart(ArmorPart::Type::BODY,  "Magic Rope", 4),
-                      ArmorPart(ArmorPart::Type::HEAD,  "Pointed Hat", 3),
-                      ArmorPart(ArmorPart::Type::LEGS,  "Long Underpants", 1),
-                      ArmorPart(ArmorPart::Type::FEET,  "Slipers", 1)});
+        return Armor({ArmorPart(ArmorPart::Type::BODY,  "Magic Rope",      MAGIC_4),
+                      ArmorPart(ArmorPart::Type::HEAD,  "Pointed Hat",     MAGIC_3),
+                      ArmorPart(ArmorPart::Type::LEGS,  "Long Underpants", MAGIC_1),
+                      ArmorPart(ArmorPart::Type::FEET,  "Slipers",         MAGIC_1)});
     }
 };
 
@@ -174,7 +193,8 @@ class NPC
         WIZARD
     };
 
-    NPC(const std::string& name, const Type type) : name_(name), type_(type)
+    NPC() = delete;
+    NPC(std::string name, const Type type) : name_(std::move(name)), type_(type)
     {
          switch (type)
          {
@@ -193,9 +213,9 @@ class NPC
          }
     }
 
-    std::string getName() const { return name_; }
-    Type  getType()       const { return type_; }
-    Armor getArmor()      const { return armor_; }
+    [[nodiscard]] auto getName()  const -> std::string { return name_; }
+    [[nodiscard]] auto getType()  const -> Type        { return type_; }
+    [[nodiscard]] auto getArmor() const -> Armor       { return armor_; }
 
   private:
     const std::string name_;
@@ -208,19 +228,17 @@ class NPC
 class NPCBuilder
 {
   public:
-    static std::shared_ptr<NPC> civilian(const std::string& name)
+    static auto civilian(const std::string& name) -> std::shared_ptr<NPC>
     {
         return std::make_shared<NPC>(name, NPC::Type::CIVILIAN);
     }
 
-    static std::shared_ptr<NPC> warrior(const std::string& name)
+    static auto warrior(const std::string& name) -> std::shared_ptr<NPC>
     {
-        int test = 10;
-        if(false) {int klaus = test/0;}
         return std::make_shared<NPC>(name, NPC::Type::WARRIOR);
     }
 
-    static std::shared_ptr<NPC> wizard(const std::string& name)
+    static auto wizard(const std::string& name) -> std::shared_ptr<NPC>
     {
         return std::make_shared<NPC>(name, NPC::Type::WIZARD);
     }

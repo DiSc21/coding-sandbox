@@ -8,16 +8,28 @@
 class ObjectBase_
 {
   public:
+    ObjectBase_()                         = default;
+    ObjectBase_(const ObjectBase_ &other) = default;
+    ObjectBase_(ObjectBase_&& other)      = default;
+
+    auto operator=(const ObjectBase_& /*other*/) -> ObjectBase_& = default;
+    auto operator=(ObjectBase_&& other) noexcept -> ObjectBase_&
+    {
+        is_used_ = other.is_used_;
+        return *this;
+    }
+    virtual ~ObjectBase_() = default;
+
+    /// @brief getter for is_used_ member
+    /// @return private member is_used_
+    [[nodiscard]] auto isUsed() const -> bool { return is_used_; }
+
     /// @brief just some pure virtual test function
-    virtual uint16_t doWhatNeedsToBeDone() const = 0;
+    [[nodiscard]] virtual auto doWhatNeedsToBeDone() const -> uint16_t = 0;
 
     /// @brief simple test function for forEach-lambda return by reference
     /// @param vec simple vector of bools
     void returnHorst(std::vector<bool>& vec) const { vec.push_back(isUsed()); }
-
-    /// @brief getter for is_used_ member
-    /// @return private member is_used_
-    bool isUsed() const { return is_used_; }
 
     /// @brief sets is_used_ member true
     void enable(){ is_used_ = true; }
@@ -33,9 +45,9 @@ class ObjectBase_
 class ObjectOne: public ObjectBase_
 {
   public:
-    ObjectOne() : ObjectBase_() { disable(); }
+    ObjectOne() { disable(); }
 
-    uint16_t doWhatNeedsToBeDone() const
+    [[nodiscard]] auto doWhatNeedsToBeDone() const -> uint16_t override
     {
         return 1;
     }
@@ -44,8 +56,8 @@ class ObjectOne: public ObjectBase_
 class ObjectTwo: public ObjectBase_
 {
   public:
-    ObjectTwo() : ObjectBase_() { enable(); }
-    uint16_t doWhatNeedsToBeDone() const
+    ObjectTwo() { enable(); }
+    [[nodiscard]] auto doWhatNeedsToBeDone() const -> uint16_t override
     {
         return 2;
     }
@@ -65,17 +77,17 @@ class ObjectHandler
 
     /// @brief templated factory method creating shared pointer
     template< typename T>
-    static std::shared_ptr<ObjectBase_> createObject()
+    [[nodiscard]] static auto createObject() -> std::shared_ptr<ObjectBase_>
     {
         return std::make_shared<T>();
     }
 
     /// @brief simple test function calling ObjectBase_::returnHorst for each instantiated object
     /// @return accumulated doWhatNeedsToBeDone values for all ENABLED objects
-    uint16_t doWhatNeedsToBeDone()
+    [[nodiscard]] auto doWhatNeedsToBeDone() -> uint16_t
     {
         uint16_t value{0};
-        forEach([] (std::shared_ptr<ObjectBase_> obj, uint16_t& val){ val += obj->doWhatNeedsToBeDone(); }, value);
+        forEach([] (const std::shared_ptr<ObjectBase_>& obj, uint16_t& val){ val += obj->doWhatNeedsToBeDone(); }, value);
         return value;
     }
 
@@ -83,7 +95,7 @@ class ObjectHandler
     /// @param vec simple vector of bools
     void processReturnHorsts(std::vector<bool>& vec)
     {
-        forEach([] (std::shared_ptr<ObjectBase_> obj, std::vector<bool>& vec_ref){ obj->returnHorst(vec_ref); }, vec);
+        forEach([] (const std::shared_ptr<ObjectBase_>& obj, std::vector<bool>& vec_ref){ obj->returnHorst(vec_ref); }, vec);
     }
 
   private:

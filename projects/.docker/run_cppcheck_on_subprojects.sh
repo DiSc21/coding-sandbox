@@ -11,15 +11,14 @@ if [ $# -eq 0 ]; then
 fi
 
 csv_make_dirs=$(cd $abs_root_dir/projects/.docker; ./find_make_directories.sh $@)
-cppcheck_dirs=$(echo "$csv_make_dirs" | sed -r 's/[,]+/\/src /g')
-cppcheck_dirs=$cppcheck_dirs"/src"
+cppcheck_dirs=$(echo "$csv_make_dirs" | sed -r 's/[,]+/ /g')
 echo $cppcheck_dirs
 
-echo "" > ${abs_root_dir}projects/cpp_file_list
 for dir in $cppcheck_dirs
 do
-  find ${abs_root_dir}${dir} | grep "\.hpp" >> ${abs_root_dir}projects/cpp_file_list
-  find ${abs_root_dir}${dir} | grep "\.cpp" >> ${abs_root_dir}projects/cpp_file_list
+  find ${abs_root_dir}${dir}"/src" | grep "\.hpp" >> ${abs_root_dir}projects/cpp_file_list
+  find ${abs_root_dir}${dir}"/src" | grep "\.cpp" >> ${abs_root_dir}projects/cpp_file_list
+  find ${abs_root_dir}${dir}"/test" | grep "\.cpp" >> ${abs_root_dir}projects/cpp_file_list
 done
 cat ${abs_root_dir}projects/cpp_file_list
 

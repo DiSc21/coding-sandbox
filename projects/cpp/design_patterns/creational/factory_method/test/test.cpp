@@ -3,10 +3,11 @@
 
 #include "../src/DS_FactoryMethod.hpp"
 
-class TestFacMeth
+
+class TestFacMeth // NOLINT
 {
   public:
-    static std::vector<std::shared_ptr<ObjectBase_>> createObjects()
+    static auto createObjects() -> std::vector<std::shared_ptr<ObjectBase_>>
     {
         std::vector<std::shared_ptr<ObjectBase_>> objects;
         static_cast<void>(objects.emplace_back(ObjectHandler::createObject<ObjectOne>()));
@@ -16,7 +17,8 @@ class TestFacMeth
     }
 };
 
-TEST(ObjectBase_, disable)
+
+TEST(ObjectBase_, disable) // NOLINT
 {
     ObjectOne obj = ObjectOne();
 
@@ -24,7 +26,9 @@ TEST(ObjectBase_, disable)
     obj.disable();
     EXPECT_FALSE(obj.isUsed());
 }
-TEST(ObjectBase_, enable)
+
+
+TEST(ObjectBase_, enable) // NOLINT
 {
     ObjectTwo obj = ObjectTwo();
 
@@ -34,18 +38,19 @@ TEST(ObjectBase_, enable)
 }
 
 
-TEST(ObjectHandler, createObjects)
+TEST(ObjectHandler, createObjects) // NOLINT
 {
     auto objects = TestFacMeth::createObjects();
     EXPECT_EQ(2, objects.size());
 }
-TEST(ObjectBase_, doWhatNeedsToBeDone)
+
+TEST(ObjectBase_, doWhatNeedsToBeDone) // NOLINT
 {
     auto objects = TestFacMeth::createObjects();
 
     std::set<uint16_t> valid_nums{1,2};
 
-    for (auto obj_ptr: objects)
+    for (const auto& obj_ptr: objects)
     {
         const auto num = obj_ptr->doWhatNeedsToBeDone();
         EXPECT_TRUE(valid_nums.find(num) != valid_nums.end());
@@ -56,13 +61,14 @@ TEST(ObjectBase_, doWhatNeedsToBeDone)
 }
 
 
-TEST(ObjectHandler, doWhatNeedsToBeDone)
+TEST(ObjectHandler, doWhatNeedsToBeDone) // NOLINT
 {
     ObjectHandler obj_handler; 
 
     EXPECT_EQ(uint8_t(2), obj_handler.doWhatNeedsToBeDone());
 }
-TEST(ObjectHandler, processReturnHorsts)
+
+TEST(ObjectHandler, processReturnHorsts) // NOLINT
 {
     ObjectHandler objects;
     std::vector<bool> vec{};
@@ -80,7 +86,8 @@ TEST(ObjectHandler, processReturnHorsts)
     EXPECT_EQ(uint8_t(0), num_disabled);
 }
 
-int main(int argc, char** argv)
+
+int main(int argc, char** argv) // NOLINT
 {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

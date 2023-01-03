@@ -37,8 +37,8 @@
 //
 //----------------------------------------------------------------------------------------------------
 
-#ifndef __DS_ARMOR__
-#define __DS_ARMOR__
+#ifndef DS_ARMOR_HPP
+#define DS_ARMOR_HPP
 
 #include <numeric>
 #include <set>
@@ -46,7 +46,7 @@
 #include <string>
 
 /// @brief Just a an auxiliary class used in the PRODUCT class
-class ArmorPart
+class SimpleArmorPart
 {
   public:
 
@@ -62,16 +62,16 @@ class ArmorPart
         NONE 
     };
 
-    ArmorPart() = delete;
-    ArmorPart(const Type type, const std::string& name = "", uint8_t protection = 0)
-        : type_(type), name_(name), protection_(protection)
+    SimpleArmorPart() = delete;
+    explicit SimpleArmorPart(const Type type, std::string name = "", uint8_t protection = 0)
+        : type_(type), name_(std::move(name)), protection_(protection)
     {}
 
-    bool operator<(const ArmorPart& rhs) const { return (type_  < rhs.type_);}
+    auto operator<(const SimpleArmorPart& rhs) const -> bool { return (type_  < rhs.type_);}
 
-    Type        getType()       const { return type_; }
-    std::string getName()       const { return name_; }
-    uint8_t     getProtection() const { return protection_; }
+    [[nodiscard]] auto getType()       const -> Type        { return type_; }
+    [[nodiscard]] auto getName()       const -> std::string { return name_; }
+    [[nodiscard]] auto getProtection() const -> uint8_t     { return protection_; }
 
   private:
     const Type type_;
@@ -81,11 +81,11 @@ class ArmorPart
 };
 
 /// @brief the so-called PRODUCT
-class Armor
+class SimpleArmor
 {
   public:
-    Armor(){}
-    Armor(std::set<ArmorPart> parts)
+    SimpleArmor() = default;
+    explicit SimpleArmor(const std::set<SimpleArmorPart>& parts)
     {
         for(const auto& part: parts)
         {
@@ -93,13 +93,13 @@ class Armor
         }
     }
 
-    uint8_t getTypeProtection(const ArmorPart::Type type) const
+    [[nodiscard]] auto getTypeProtection(const SimpleArmorPart::Type type) const -> uint8_t
     {
         const auto& part_it = armor_parts_.find(type);
         return (part_it != armor_parts_.end()) ? part_it->second.getProtection() : 0;
     }
 
-    uint16_t getProtection() const
+    [[nodiscard]] auto getProtection() const -> uint16_t
     {
         return std::accumulate(std::begin(armor_parts_), std::end(armor_parts_), 0,
                                [](const std::uint16_t sum, const auto& part)
@@ -107,33 +107,41 @@ class Armor
     }
 
   private:
-    std::map<ArmorPart::Type, ArmorPart> armor_parts_{};
+    std::map<SimpleArmorPart::Type, SimpleArmorPart> armor_parts_{};
 };
 
 /// @brief the so-called BUILDER
-class ArmorBuilder
+class SimpleArmorBuilder
 {
+    // just for clang complaining about magic numbers down there
+    static const uint8_t MAGIC_1  =  1;
+    static const uint8_t MAGIC_3  =  3;
+    static const uint8_t MAGIC_4  =  4;
+    static const uint8_t MAGIC_5  =  5;
+    static const uint8_t MAGIC_7  =  6;
+    static const uint8_t MAGIC_12 = 12;
+
   public:
-    static Armor civilian()
+    static auto civilian() -> SimpleArmor
     {
-        return Armor({ArmorPart(ArmorPart::Type::BODY,  "Plain Shirt", 1),
-                      ArmorPart(ArmorPart::Type::LEGS,  "Cloth trousers", 1),
-                      ArmorPart(ArmorPart::Type::FEET,  "Simple Shoes", 1)});
+        return SimpleArmor({SimpleArmorPart(SimpleArmorPart::Type::BODY,  "Plain Shirt",    MAGIC_1),
+                            SimpleArmorPart(SimpleArmorPart::Type::LEGS,  "Cloth trousers", MAGIC_1),
+                            SimpleArmorPart(SimpleArmorPart::Type::FEET,  "Simple Shoes",   MAGIC_1)});
     }
-    static Armor warrior()
+    static auto warrior() -> SimpleArmor
     {
-        return Armor({ArmorPart(ArmorPart::Type::BODY,  "Leather Chest Protector", 12),
-                      ArmorPart(ArmorPart::Type::HEAD,  "Leather Helmet", 7),
-                      ArmorPart(ArmorPart::Type::LEGS,  "Bavarian Leather Trousers", 5),
-                      ArmorPart(ArmorPart::Type::HANDS, "Leather Gloves", 4),
-                      ArmorPart(ArmorPart::Type::FEET,  "Leather Boots", 3)});
+        return SimpleArmor({SimpleArmorPart(SimpleArmorPart::Type::BODY,  "Leather Chest Protector",   MAGIC_12),
+                            SimpleArmorPart(SimpleArmorPart::Type::HEAD,  "Leather Helmet",            MAGIC_7),
+                            SimpleArmorPart(SimpleArmorPart::Type::LEGS,  "Bavarian Leather Trousers", MAGIC_5),
+                            SimpleArmorPart(SimpleArmorPart::Type::HANDS, "Leather Gloves",            MAGIC_4),
+                            SimpleArmorPart(SimpleArmorPart::Type::FEET,  "Leather Boots",             MAGIC_3)});
     }
-    static Armor wizard()
+    static auto wizard() -> SimpleArmor
     {
-        return Armor({ArmorPart(ArmorPart::Type::BODY,  "Magic Rope", 4),
-                      ArmorPart(ArmorPart::Type::HEAD,  "Pointed Hat", 3),
-                      ArmorPart(ArmorPart::Type::LEGS,  "Long Underpants", 1),
-                      ArmorPart(ArmorPart::Type::FEET,  "Slipers", 1)});
+        return SimpleArmor({SimpleArmorPart(SimpleArmorPart::Type::BODY,  "Magic Rope",      MAGIC_4),
+                            SimpleArmorPart(SimpleArmorPart::Type::HEAD,  "Pointed Hat",     MAGIC_3),
+                            SimpleArmorPart(SimpleArmorPart::Type::LEGS,  "Long Underpants", MAGIC_1),
+                            SimpleArmorPart(SimpleArmorPart::Type::FEET,  "Slipers",         MAGIC_1)});
     }
 };
 

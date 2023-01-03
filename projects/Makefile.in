@@ -1,17 +1,17 @@
-cmd=${dir}/.docker/run_docker.sh
+cmd=${base_dir}/.docker/run_docker.sh
+
+.PHONY: build/docker
+build/docker:
+	${cmd} "echo Welcome to Docker dude!"
 
 
-test: build/main
-	${cmd} "cmake --build build -t test ARGS=-V"
-
-build/main:
-	${cmd} "cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -Bbuild . ; cmake --build build"; cp build/compile_commands.json .;
-
-.PHONY: clean all into
-
+#--------------------------------
+# cleaningup and going into docker
+#--------------------------------
+.PHONY: into
 into:
-	${dir}/.docker/into.sh
-
+	${base_dir}/.docker/into.sh
+.PHONY: clean
 clean:
-	${cmd} "rm -rf build"
+	${cmd} "rm -rf build; rm -rf build_clang"
 

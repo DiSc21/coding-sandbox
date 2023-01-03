@@ -9,33 +9,38 @@ void EXPECT_WINDOWS(const PlatformWidget& data) { EXPECT_EQ(PlatformType::WINDOW
 void EXPECT_BUTTON(const PlatformWidget& data) { EXPECT_EQ(WidgetType::BUTTON, data.w_type); }
 void EXPECT_MENU(const PlatformWidget& data)   { EXPECT_EQ(WidgetType::MENU, data.w_type); }
 
-TEST(LinuxWidget, Button)
+
+TEST(LinuxWidget, Button) // NOLINT
 {
     PlatformWidget data = LinuxButton().draw();
     EXPECT_LINUX(data);
     EXPECT_BUTTON(data);
 }
-TEST(LinuxWidget, Menu)
+
+TEST(LinuxWidget, Menu) // NOLINT
 {
     PlatformWidget data = LinuxMenu().draw();
     EXPECT_LINUX(data);
     EXPECT_MENU(data);
 }
 
-TEST(LinuxFactory, create_button)
+
+TEST(LinuxFactory, create_button) // NOLINT
 {
     PlatformWidget data = LinuxFactory().create_button()->draw();
     EXPECT_LINUX(data);
     EXPECT_BUTTON(data);
 }
-TEST(LinuxFactory, create_menu)
+
+TEST(LinuxFactory, create_menu) // NOLINT
 {
     PlatformWidget data = LinuxFactory().create_menu()->draw();
     EXPECT_LINUX(data);
     EXPECT_MENU(data);
 }
 
-TEST(LinuxWidgetClient, display_window)
+
+TEST(LinuxWidgetClient, display_window) // NOLINT
 {
     const auto data_vec = WidgetClient(std::make_shared<LinuxFactory>()).display_window();
 
@@ -51,33 +56,38 @@ TEST(LinuxWidgetClient, display_window)
     EXPECT_EQ(1, menu_num);
 }
 
-TEST(Windows, Button)
+
+TEST(Windows, Button) // NOLINT
 {
     PlatformWidget data = WindowsButton().draw();
     EXPECT_WINDOWS(data);
     EXPECT_BUTTON(data);
 }
-TEST(Windows, Menu)
+
+TEST(Windows, Menu) // NOLINT
 {
     PlatformWidget data = WindowsMenu().draw();
     EXPECT_WINDOWS(data);
     EXPECT_MENU(data);
 }
 
-TEST(WindowsFactory, create_button)
+
+TEST(WindowsFactory, create_button) // NOLINT
 {
     PlatformWidget data = WindowsFactory().create_button()->draw();
     EXPECT_WINDOWS(data);
     EXPECT_BUTTON(data);
 }
-TEST(WindowsFactory, create_menu)
+
+TEST(WindowsFactory, create_menu) // NOLINT
 {
     PlatformWidget data = WindowsFactory().create_menu()->draw();
     EXPECT_WINDOWS(data);
     EXPECT_MENU(data);
 }
 
-TEST(WindowsWidgetClient, display_window)
+
+TEST(WindowsWidgetClient, display_window) // NOLINT
 {
     const auto data_vec = WidgetClient(std::make_shared<WindowsFactory>()).display_window();
 
@@ -93,7 +103,8 @@ TEST(WindowsWidgetClient, display_window)
     EXPECT_EQ(1, menu_num);
 }
 
-int main(int argc, char** argv)
+
+int main(int argc, char** argv) // NOLINT
 {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

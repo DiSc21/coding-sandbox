@@ -1,0 +1,70 @@
+# This is cpp makefile include shared by all cpp subprojects.
+# Note: the The `cmd` and `base_dir` variable is defined in 
+
+.PHONY: build/clean
+build/clean: clean build/test 
+
+
+#--------------------------------
+# default builds and some testing
+#--------------------------------
+.PHONY: build/main
+build/main:
+	${cmd} "cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -Bbuild . ; cmake --build build"; cp build/compile_commands.json .
+
+.PHONY: test
+test:
+	${cmd} "cmake --build build -t test ARGS=-V"
+
+.PHONY: build/test
+build/test: build/main test coverage
+
+
+#--------------------------------
+# compiler specific build targets
+#--------------------------------
+.PHONY: build/gcc
+build/gcc:
+	${cmd} "rm -rf build; export CC=/usr/bin/gcc; export CXX=/usr/bin/g++; cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -Bbuild . ; cmake --build build 2>&1 | tee build/gcc_build.log"; cp build/compile_commands.json .
+
+.PHONY: build/clang
+build/clang: clean/clang
+	${cmd} "rm -rf build_clang; export CC=/usr/bin/clang-14; export CXX=/usr/bin/clang++-14; cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -Bbuild_clang . ; cmake --build build_clang 2>&1 | tee build_clang/clang_build.log"
+
+
+#--------------------------------
+# targets for a cpp code analysis
+#--------------------------------
+.PHONY: coverage
+coverage:
+	${cmd} "cd build; gcovr -r ../ . --exclude-throw-branches --exclude-unreachable-branches"
+
+.PHONY: coverage-html
+coverage-html:
+	${cmd} "cd build; gcovr -r ../ . --exclude-throw-branches --exclude-unreachable-branches --html --html-details -o example_html_details.html"
+
+.PHONY: coverage-cobertura
+coverage-cobertura:
+	${cmd} "cd build; gcovr -r ../ . --exclude-throw-branches --exclude-unreachable-branches --xml -o example_cobertura_summary.xml"
+
+.PHONY: cpp-check
+cpp-check:
+	${cmd} "cppcheck --force --verbose --check-config --enable=all --xml --xml-version=2 ./src/ 2> build/cppcheck.xml"
+
+.PHONY: clang-tidy
+clang-tidy:
+	${cmd} "run-clang-tidy-14 -p build -header-filter=.* 2>&1 | tee -a build/clang_tidy_result; cd build; cat clang_tidy_result | sed 's/\x1B\[[0-9;]\{1,\}[A-Za-z]//g'"
+# 	| ../../../.docker/clang-tidy-to-junit.py /home/jarjar/Coding/DockerSandbox/projects/cpp/code_analysis/ > junit.xml"
+
+
+#--------------------------------
+# clean targets for gcc and clang
+#--------------------------------
+.PHONY: clean/gcc
+clean/gcc:
+	${cmd} "rm -rf build"
+
+.PHONY: clean/clang
+clean/clang:
+	${cmd} "rm -rf build_clang"
+

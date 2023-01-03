@@ -1,5 +1,5 @@
-#ifndef __DS_NPC__
-#define __DS_NPC__
+#ifndef DS_NPC_HPP
+#define DS_NPC_HPP
 
 #include <map>
 #include <memory>
@@ -7,7 +7,7 @@
 
 #include "DS_Armor.hpp"
 
-class NPC
+class SimpleNPC
 {
   public:
     enum class Type : uint8_t
@@ -17,38 +17,38 @@ class NPC
         WIZARD
     };
 
-    NPC(const std::string& name, const Type type, const Armor& armor = {})
-        : name_(name), type_(type), armor_(armor)
+    SimpleNPC(std::string name, const Type type, SimpleArmor armor = {})
+        : name_(std::move(name)), type_(type), armor_(std::move(armor))
     {
     }
 
-    std::string getName() const { return name_; }
-    Type  getType()       const { return type_; }
-    Armor getArmor()      const { return armor_; }
+    [[nodiscard]] auto getName()  const -> std::string { return name_; }
+    [[nodiscard]] auto getType()  const -> Type        { return type_; }
+    [[nodiscard]] auto getArmor() const -> SimpleArmor { return armor_; }
 
   private:
     const std::string name_;
     const Type        type_;
 
-    Armor armor_;
+    SimpleArmor armor_;
 };
 
-class NPCBuilder
+class SimpleNPCBuilder
 {
   public:
-    static std::shared_ptr<NPC> civilian(const std::string& name)
+    [[nodiscard]] static auto civilian(const std::string& name) -> std::shared_ptr<SimpleNPC>
     {
-        return std::make_shared<NPC>(name, NPC::Type::CIVILIAN, ArmorBuilder::civilian());
+        return std::make_shared<SimpleNPC>(name, SimpleNPC::Type::CIVILIAN, SimpleArmorBuilder::civilian());
     }
 
-    static std::shared_ptr<NPC> warrior(const std::string& name)
+    [[nodiscard]] static auto warrior(const std::string& name) -> std::shared_ptr<SimpleNPC>
     {
-        return std::make_shared<NPC>(name, NPC::Type::WARRIOR, ArmorBuilder::warrior());
+        return std::make_shared<SimpleNPC>(name, SimpleNPC::Type::WARRIOR, SimpleArmorBuilder::warrior());
     }
 
-    static std::shared_ptr<NPC> wizard(const std::string& name)
+    [[nodiscard]] static auto wizard(const std::string& name) -> std::shared_ptr<SimpleNPC>
     {
-        return std::make_shared<NPC>(name, NPC::Type::WIZARD, ArmorBuilder::wizard());
+        return std::make_shared<SimpleNPC>(name, SimpleNPC::Type::WIZARD, SimpleArmorBuilder::wizard());
     }
 };
 

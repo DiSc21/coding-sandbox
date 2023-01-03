@@ -3,53 +3,53 @@
 
 #include "../src/DS_NPC.hpp"
 
-const std::pair<std::string, NPC::Type> CIVILIAN{"Old McDonald", NPC::Type::CIVILIAN};
-const std::pair<std::string, NPC::Type> WARRIOR{"The Dirk Knight", NPC::Type::WARRIOR};
-const std::pair<std::string, NPC::Type> WIZARD{"The Wolowizard", NPC::Type::WIZARD};
+const std::pair<std::string, SimpleNPC::Type> CIVILIAN{"Old McDonald", SimpleNPC::Type::CIVILIAN};
+const std::pair<std::string, SimpleNPC::Type> WARRIOR{"The Dirk Knight", SimpleNPC::Type::WARRIOR};
+const std::pair<std::string, SimpleNPC::Type> WIZARD{"The Wolowizard", SimpleNPC::Type::WIZARD};
 
-TEST(NPC, getName)
+TEST(SimpleNPC, getName) // NOLINT
 {
-    const NPC civilian(CIVILIAN.first, CIVILIAN.second);
+    const SimpleNPC civilian(CIVILIAN.first, CIVILIAN.second);
     EXPECT_EQ(CIVILIAN.first, civilian.getName());
 }
-TEST(NPC, getType)
+TEST(SimpleNPC, getType) // NOLINT
 {
-    const NPC civilian(CIVILIAN.first, CIVILIAN.second);
+    const SimpleNPC civilian(CIVILIAN.first, CIVILIAN.second);
     EXPECT_EQ(CIVILIAN.second, civilian.getType());
 }
 
-TEST(NPCBuilder, civilian)
+TEST(SimpleNPCBuilder, civilian) // NOLINT
 {
-    const auto civilian = NPCBuilder::civilian(CIVILIAN.first);
+    const auto civilian = SimpleNPCBuilder::civilian(CIVILIAN.first);
     EXPECT_EQ(CIVILIAN.first, civilian->getName());
     EXPECT_EQ(CIVILIAN.second, civilian->getType());
 }
 
-TEST(NPCBuilder, warrior)
+TEST(SimpleNPCBuilder, warrior) // NOLINT
 {
-    const auto warrior = NPCBuilder::warrior(WARRIOR.first);
+    const auto warrior = SimpleNPCBuilder::warrior(WARRIOR.first);
     EXPECT_EQ(WARRIOR.first, warrior->getName());
     EXPECT_EQ(WARRIOR.second, warrior->getType());
 }
 
-TEST(NPCBuilder, wizard)
+TEST(SimpleNPCBuilder, wizard) // NOLINT
 {
-    const auto wizard = NPCBuilder::wizard(WIZARD.first);
+    const auto wizard = SimpleNPCBuilder::wizard(WIZARD.first);
     EXPECT_EQ(WIZARD.first, wizard->getName());
     EXPECT_EQ(WIZARD.second, wizard->getType());
 }
 
-TEST(NPC, getArmor)
+TEST(SimpleNPC, getArmor) // NOLINT
 {
-    const auto civilian = NPCBuilder::civilian(CIVILIAN.first);
-    const auto warrior = NPCBuilder::warrior(WARRIOR.first);
-    const auto wizard = NPCBuilder::wizard(WIZARD.first);
+    const auto civilian = SimpleNPCBuilder::civilian(CIVILIAN.first);
+    const auto warrior = SimpleNPCBuilder::warrior(WARRIOR.first);
+    const auto wizard = SimpleNPCBuilder::wizard(WIZARD.first);
 
     EXPECT_LT(civilian->getArmor().getProtection(), wizard->getArmor().getProtection());
     EXPECT_LT(wizard->getArmor().getProtection(), warrior->getArmor().getProtection());
 }
 
-int main(int argc, char** argv)
+int main(int argc, char** argv) // NOLINT
 {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

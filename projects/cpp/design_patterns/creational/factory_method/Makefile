@@ -1,12 +1,12 @@
 # search base directory containing Makefile.in
-dir:=$(shell dir=".."; while [ true ]; do ls $$dir | grep -q Makefile.in && break || dir="$$dir/.."; done; echo $$dir)
+base_dir:=$(shell dir=".."; while [ true ]; do ls $$dir | grep -q Makefile.in && break || dir="$$dir/.."; done; echo $$dir)
+# search base directory containing MakefileCPP.in
+cpp_incl_dir:=$(shell dir="."; while [ true ]; do ls $$dir | grep -q MakefileCPP.in && break || dir="$$dir/.."; done; echo $$dir)
 
-build: clean test 
+.PHONY: build
+build: build/main test 
 
-clang-tidy: build
-	${cmd} "clang-tidy-13 -checks=cert-*,-clang-analyzer-*,-hicpp-* --export-fixes=clang-tidy-fixes --warnings-as-errors=* ./src/DS_FactoryMethod.hpp"
-
-include ${dir}/Makefile.in
+include ${base_dir}/Makefile.in
+include ${cpp_incl_dir}/MakefileCPP.in
 CFLAGS += -lgtest -lgtest_main -lpthread -std=c++17
-
 

@@ -5,6 +5,10 @@ pipeline {
         //def make_dirs = sh(script: "./docker/find_make_directories.sh projects/cpp/code_analysis projects/cpp/design_patterns", returnStdout: true).trim() as Integer
         def make_dirs_roots = "projects/cpp/code_analysis projects/cpp/design_patterns"
         def make_dirs = sh(script: "projects/.docker/find_make_directories.sh ${make_dirs_roots}", returnStdout: true).trim()
+        def threshold_clang_tidy = 0
+        def threshold_cppcheck = 0
+        def threshold_clang = 0
+        def threshold_gcc = 0
     }
     stages {
         stage('Build Docker') {
@@ -68,6 +72,7 @@ pipeline {
                     steps {
                         echo 'Collecting GCC Warnings ...'
                         recordIssues (
+                            qualityGates: [[threshold: 1, type: 'TOTAL', unstable: true]],
                             sourceCodeEncoding: 'ISO-8859-1', enabledForFailure: true, aggregatingResults: true,
                             tools: [gcc(pattern:'**.results/gcc_build.log')]
                         )
@@ -77,6 +82,7 @@ pipeline {
                     steps {
                         echo 'Collecting Clang Warnings ...'
                         recordIssues (
+                            qualityGates: [[threshold: 1, type: 'TOTAL', unstable: true]],
                             sourceCodeEncoding: 'ISO-8859-1', enabledForFailure: true, aggregatingResults: true,
                             tools: [clang(pattern:'**.results/clang_build.log')]
                         )
@@ -92,6 +98,7 @@ pipeline {
                             }
                         }
                         recordIssues (
+                            qualityGates: [[threshold: 1, type: 'TOTAL', unstable: true]],
                             sourceCodeEncoding: 'ISO-8859-1', enabledForFailure: true, aggregatingResults: true,
                             tools: [clangTidy(name: 'Clang-Tidy', pattern: '**.results/clang_tidy_result')]
                         )
@@ -106,6 +113,7 @@ pipeline {
                                   cp projects/.results/cppcheck.xml .results/cppcheck.xml
                             '''
                             recordIssues (
+                                qualityGates: [[threshold: 1, type: 'TOTAL', unstable: true]],
                                 sourceCodeEncoding: 'ISO-8859-1', enabledForFailure: true, aggregatingResults: true,
                                 tools: [cppCheck(pattern:'**.results/cppcheck.xml')]
                             )

@@ -13,5 +13,5 @@ docker run -it --rm --name ${name} \
     --net=host \
     --env="DISPLAY" \
     -v $abs_base_dir:$abs_base_dir \
-    -w `pwd` \
+    -w $abs_base_dir \
     $dockername /bin/bash

@@ -5,6 +5,9 @@ abs_base_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")/../"; pwd)
 
 source $(dirname "${BASH_SOURCE[0]}")/include.sh
 
+echo "Test pwd: "$(pwd)
+echo "Test abs: "${abs_base_dir}
+
 docker run -i --rm --name ${name} \
     --volume="$HOME/.Xauthority:/root/.Xauthority:rw" \
     --volume /etc/passwd:/etc/passwd:ro \
@@ -14,5 +17,6 @@ docker run -i --rm --name ${name} \
     --net=host \
     --env="DISPLAY" \
     -v $abs_base_dir:$abs_base_dir \
-    $dockername /bin/bash -c "cd $(pwd); $@"
+    -w $(pwd) \
+    $dockername /bin/bash -c "$@"
 

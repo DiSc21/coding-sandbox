@@ -5,6 +5,13 @@ pipeline {
         //def make_dirs = sh(script: "./docker/find_make_directories.sh projects/cpp/code_analysis projects/cpp/design_patterns", returnStdout: true).trim() as Integer
         def make_dirs_roots = "projects/cpp/code_analysis projects/cpp/design_patterns"
         def make_dirs = sh(script: "projects/.docker/find_make_directories.sh ${make_dirs_roots}", returnStdout: true).trim()
+        def threshold_clang_tidy = 1
+        def threshold_cppcheck = 2
+        def threshold_cpplint = 7
+        def threshold_doxygen = 126
+        def threshold_cmake = 1
+        def threshold_clang = 1
+        def threshold_gcc = 1
     }
     stages {
         stage('Build Docker') {
@@ -55,9 +62,12 @@ pipeline {
                 script {
                     sh "rm -rf .results || true; mkdir .results"
                     "${make_dirs}".split(',').each {
-                        echo "Collecting GCC Warnings subproject ${it}"
+                        echo "Collecting GCC logs for subproject ${it}"
                         sh "echo ${it}/build/gcc_build.log | xargs cat >> .results/gcc_build.log"
+                        echo "Collecting Clang logs for subproject ${it}"
                         sh "echo ${it}/build_clang/clang_build.log | xargs cat  >> .results/clang_build.log;"
+                        echo "Collecting Clang logs for subproject ${it}"
+                        sh "echo ${it}/build/CMakeFiles/CMakeOutput.log | xargs cat  >> .results/cmake_builds.log;"
                     }
                 }
             }
@@ -68,6 +78,7 @@ pipeline {
                     steps {
                         echo 'Collecting GCC Warnings ...'
                         recordIssues (
+                            qualityGates: [[threshold: threshold_gcc, type: 'TOTAL', unstable: true]],
                             sourceCodeEncoding: 'ISO-8859-1', enabledForFailure: true, aggregatingResults: true,
                             tools: [gcc(pattern:'**.results/gcc_build.log')]
                         )
@@ -77,8 +88,19 @@ pipeline {
                     steps {
                         echo 'Collecting Clang Warnings ...'
                         recordIssues (
+                            qualityGates: [[threshold: threshold_clang, type: 'TOTAL', unstable: true]],
                             sourceCodeEncoding: 'ISO-8859-1', enabledForFailure: true, aggregatingResults: true,
                             tools: [clang(pattern:'**.results/clang_build.log')]
+                        )
+                    }
+                }
+                stage('Check Cmake') {
+                    steps {
+                        echo 'Collecting CMake Warnings ...'
+                        recordIssues (
+                            qualityGates: [[threshold: threshold_cmake, type: 'TOTAL', unstable: true]],
+                            sourceCodeEncoding: 'ISO-8859-1', enabledForFailure: true, aggregatingResults: true,
+                            tools: [cmake(pattern:'**.results/cmake_builds.log')]
                         )
                     }
                 }
@@ -92,6 +114,7 @@ pipeline {
                             }
                         }
                         recordIssues (
+                            qualityGates: [[threshold: threshold_clang_tidy, type: 'TOTAL', unstable: true]],
                             sourceCodeEncoding: 'ISO-8859-1', enabledForFailure: true, aggregatingResults: true,
                             tools: [clangTidy(name: 'Clang-Tidy', pattern: '**.results/clang_tidy_result')]
                         )
@@ -106,9 +129,47 @@ pipeline {
                                   cp projects/.results/cppcheck.xml .results/cppcheck.xml
                             '''
                             recordIssues (
+                                qualityGates: [[threshold: threshold_cppcheck, type: 'TOTAL', unstable: true]],
                                 sourceCodeEncoding: 'ISO-8859-1', enabledForFailure: true, aggregatingResults: true,
                                 tools: [cppCheck(pattern:'**.results/cppcheck.xml')]
                             )
+                        }
+                    }
+                }
+                stage('Check CppLint') {
+                    steps {
+                        script {
+                            echo 'Running CppStyle ...'
+                            "${make_dirs}".split(',').each {
+                                sh "cd ${it} && make cpplint"
+                                sh "echo ${it}/build/cpplint.log | xargs cat  >> .results/cpplint.log"
+                            }
+                            recordIssues (
+                                qualityGates: [[threshold: threshold_cpplint, type: 'TOTAL', unstable: true]],
+                                sourceCodeEncoding: 'ISO-8859-1', enabledForFailure: true, aggregatingResults: true,
+                                tools: [cppLint(pattern:'**.results/cpplint.log')]
+                            )
+                        }
+                    }
+                }
+                stage('Check Doxygen') {
+                    steps {
+                        script {
+                            echo 'Collecting Doxygen Warnings ...'
+                            //System.setProperty("hudson.model.DirectoryBrowserSupport.CSP", "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self'; style-src 'self' 'unsafe-inline'; font-src *; sandbox allow-forms allow-scripts allow-same-origin;");
+                            sh "cd projects/ && make doxygen && cp doxygen/doxygen_warnings.log ../.results" 
+                            recordIssues (
+                                qualityGates: [[threshold: threshold_doxygen, type: 'TOTAL', unstable: true]],
+                                sourceCodeEncoding: 'ISO-8859-1', enabledForFailure: true, aggregatingResults: true,
+                                tools: [doxygen(pattern:'**.results/doxygen_warnings.log')]
+                            )
+                            publishHTML target: ([ allowMissing: false,
+                                                   alwaysLinkToLastBuild: true,
+                                                   keepAll: true,
+                                                   reportDir: 'projects/doxygen/html',
+                                                   reportFiles: 'index.html',
+                                                   reportName: 'Doxygen HTML-Report'
+                                                ])
                         }
                     }
                 }
@@ -123,12 +184,12 @@ pipeline {
                             '''
                             publishCoverage adapters: [cobertura('**.results/gcovr_coverage.xml')]
                             publishHTML target: ([ allowMissing: false,
-                                                     alwaysLinkToLastBuild: true,
-                                                     keepAll: true,
-                                                     reportDir: '.results',
-                                                     reportFiles: 'gcovr_coverage.html',
-                                                     reportName: 'Gcovr Coverage html-Report'
-                                                  ])
+                                                   alwaysLinkToLastBuild: true,
+                                                   keepAll: true,
+                                                   reportDir: '.results',
+                                                   reportFiles: 'gcovr_coverage.html',
+                                                   reportName: 'Gcovr Coverage html-Report'
+                                                ])
                         }
                     }
                 }

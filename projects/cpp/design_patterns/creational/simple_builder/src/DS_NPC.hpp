@@ -22,8 +22,8 @@ class SimpleNPC
     {
     }
 
-    [[nodiscard]] auto getName()  const -> std::string { return name_; }
-    [[nodiscard]] auto getType()  const -> Type        { return type_; }
+    [[nodiscard]] auto getName() const -> std::string { return name_; }
+    [[nodiscard]] auto getType() const -> Type { return type_; }
     [[nodiscard]] auto getArmor() const -> SimpleArmor { return armor_; }
 
   private:
@@ -36,17 +36,17 @@ class SimpleNPC
 class SimpleNPCBuilder
 {
   public:
-    [[nodiscard]] static auto civilian(const std::string& name) -> std::shared_ptr<SimpleNPC>
+    [[nodiscard]] static auto civilian(const std::string &name) -> std::shared_ptr<SimpleNPC>
     {
         return std::make_shared<SimpleNPC>(name, SimpleNPC::Type::CIVILIAN, SimpleArmorBuilder::civilian());
     }
 
-    [[nodiscard]] static auto warrior(const std::string& name) -> std::shared_ptr<SimpleNPC>
+    [[nodiscard]] static auto warrior(const std::string &name) -> std::shared_ptr<SimpleNPC>
     {
         return std::make_shared<SimpleNPC>(name, SimpleNPC::Type::WARRIOR, SimpleArmorBuilder::warrior());
     }
 
-    [[nodiscard]] static auto wizard(const std::string& name) -> std::shared_ptr<SimpleNPC>
+    [[nodiscard]] static auto wizard(const std::string &name) -> std::shared_ptr<SimpleNPC>
     {
         return std::make_shared<SimpleNPC>(name, SimpleNPC::Type::WIZARD, SimpleArmorBuilder::wizard());
     }
@@ -54,4 +54,3 @@ class SimpleNPCBuilder
 
 
 #endif
-

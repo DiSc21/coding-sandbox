@@ -42,16 +42,15 @@ TEST(SimpleNPCBuilder, wizard) // NOLINT
 TEST(SimpleNPC, getArmor) // NOLINT
 {
     const auto civilian = SimpleNPCBuilder::civilian(CIVILIAN.first);
-    const auto warrior = SimpleNPCBuilder::warrior(WARRIOR.first);
-    const auto wizard = SimpleNPCBuilder::wizard(WIZARD.first);
+    const auto warrior  = SimpleNPCBuilder::warrior(WARRIOR.first);
+    const auto wizard   = SimpleNPCBuilder::wizard(WIZARD.first);
 
     EXPECT_LT(civilian->getArmor().getProtection(), wizard->getArmor().getProtection());
     EXPECT_LT(wizard->getArmor().getProtection(), warrior->getArmor().getProtection());
 }
 
-int main(int argc, char** argv) // NOLINT
+int main(int argc, char **argv) // NOLINT
 {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }
-

@@ -43,9 +43,8 @@ TEST(SimpleArmorBuilder, getProtection) // NOLINT
     EXPECT_LT(wizard.getProtection(), warrior.getProtection());
 }
 
-int main(int argc, char** argv) // NOLINT
+int main(int argc, char **argv) // NOLINT
 {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }
-

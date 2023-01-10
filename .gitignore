@@ -7,6 +7,9 @@ results
 .cache
 compile_commands.json
 
+projects/doxygen/*
+!projects/doxygen/.gitkeep
+
 jenkins/jenkins_home/*
 !jenkins/jenkins_home/.gitkeep
 

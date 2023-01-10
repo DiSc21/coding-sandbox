@@ -33,6 +33,13 @@ build/clang: clean/clang
 
 
 #--------------------------------
+# targets for a clang-format step
+#--------------------------------
+.PHONY: clang-format
+clang-format:
+	${cmd} "find . -iname *.h -o -iname *.c -o -iname *.cpp -o -iname *.hpp | xargs clang-format-14 -style=file -i -fallback-style=none"
+
+#--------------------------------
 # targets for a cpp code analysis
 #--------------------------------
 .PHONY: coverage
@@ -50,6 +57,10 @@ coverage-cobertura:
 .PHONY: cpp-check
 cpp-check:
 	${cmd} "cppcheck --force --verbose --check-config --enable=all --xml --xml-version=2 ./src/ 2> build/cppcheck.xml"
+
+.PHONY: cpplint
+cpplint:
+	${cmd} "cpplint --quiet --counting=detailed --filter=-whitespace/indent,-whitespace/braces,-build/header_guard --linelength=130 --output=eclipse --recursive ./src/ 2> build/cpplint.log || true"
 
 .PHONY: clang-tidy
 clang-tidy:

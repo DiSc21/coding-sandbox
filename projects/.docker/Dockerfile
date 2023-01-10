@@ -32,7 +32,7 @@ ENV TZ=Europe/Berlin
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 RUN apt-get update && apt-get install -y --fix-missing tzdata
 
-RUN apt-get update && apt-get install -y --fix-missing lcov gcovr cppcheck
+RUN apt-get update && apt-get install -y --fix-missing lcov gcovr cppcheck doxygen graphviz
 
 # install rustc
 RUN apt-get install -y --no-install-recommends --fix-missing rustc
@@ -43,6 +43,7 @@ RUN apt-get install -y --no-install-recommends --fix-missing pkg-config libgtk-3
 RUN apt-get purge fcitx-module-dbus
 ENV PKG_CONFIG_PATH="/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/lib/x86_64-linux-gnu/gtkmm-3.0/include/:/usr/share/pkgconfig:${PKG_CONFIG_PATH}"
 
+RUN apt-get install -y --no-install-recommends --fix-missing cpplint
 # # install glade
 # RUN apt-get install -y --no-install-recommends --fix-missing glade
 # 

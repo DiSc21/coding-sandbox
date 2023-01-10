@@ -11,4 +11,3 @@ std::shared_ptr<DS_Singleton> DS_Singleton::instance_ = nullptr; // NOLINT cppco
 
     return instance_;
 }
-

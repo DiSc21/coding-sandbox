@@ -14,9 +14,12 @@ class DS_Singleton
     DS_Singleton() = default;
 
   private:
-     static std::shared_ptr<DS_Singleton> instance_; // NOLINT cppcoreguidelines-avoid-non-const-global-variables
-     int counter_{0};
+    /// @brief for sharing the singleton instance
+    /// @note: not thread safe implementation
+    static std::shared_ptr<DS_Singleton> instance_; // NOLINT cppcoreguidelines-avoid-non-const-global-variables
+
+    /// @brief simple conter for no reason
+    int counter_{0};
 };
 
 #endif
-

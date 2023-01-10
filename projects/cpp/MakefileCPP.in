@@ -54,8 +54,8 @@ coverage-html:
 coverage-cobertura:
 	${cmd} "cd build; gcovr -r ../ . --exclude-throw-branches --exclude-unreachable-branches --xml -o example_cobertura_summary.xml"
 
-.PHONY: cpp-check
-cpp-check:
+.PHONY: cppcheck
+cppcheck:
 	${cmd} "cppcheck --force --verbose --check-config --enable=all --xml --xml-version=2 ./src/ 2> build/cppcheck.xml"
 
 .PHONY: cpplint

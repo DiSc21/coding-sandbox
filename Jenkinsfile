@@ -4,7 +4,7 @@ pipeline {
     environment {
         //def make_dirs = sh(script: "./docker/find_make_directories.sh projects/cpp/code_analysis projects/cpp/design_patterns", returnStdout: true).trim() as Integer
         def make_dirs_roots = "projects/cpp/code_analysis projects/cpp/design_patterns"
-        def make_dirs = sh(script: "projects/.docker/find_make_directories.sh ${make_dirs_roots}", returnStdout: true).trim()
+        def make_dirs = sh(script: ".docker/find_make_directories.sh ${make_dirs_roots}", returnStdout: true).trim()
         def threshold_clang_tidy = 1
         def threshold_cppcheck = 2
         def threshold_cpplint = 7
@@ -19,7 +19,7 @@ pipeline {
                 echo 'Building Docker ...'
                 echo "${make_dirs}"
                 sh '''#!/bin/bash
-                      cd projects/.docker; ./run_docker.sh "echo hello docker"
+                      cd .docker; ./run_docker.sh "echo hello docker"
                 '''
             }
         }
@@ -125,7 +125,7 @@ pipeline {
                         script {
                             echo 'Running CppCheck ...'
                             sh '''#!/bin/bash
-                                  projects/.docker/run_cppcheck_on_subprojects.sh ${make_dirs_roots}
+                                  .docker/run_cppcheck_on_subprojects.sh ${make_dirs_roots}
                                   cp projects/.results/cppcheck.xml .results/cppcheck.xml
                             '''
                             recordIssues (
@@ -144,6 +144,10 @@ pipeline {
                                 sh "cd ${it} && make cpplint"
                                 sh "echo ${it}/build/cpplint.log | xargs cat  >> .results/cpplint.log"
                             }
+                            //sh '''#!/bin/bash
+                            //      .docker/run_docker.sh "cpplint --quiet --counting=detailed --filter=-whitespace/indent,-whitespace/braces,-build/header_guard --linelength=130 --output=eclipse --recursive --exclude=**/build_clang/** --exclude=**/build/** --exclude=**/test/** ./projects/cpp/ 2> projects/.results/cpplint.log" 
+                            //      cp projects/.results/cpplint.log .results/cpplint.log
+                            //'''
                             recordIssues (
                                 qualityGates: [[threshold: threshold_cpplint, type: 'TOTAL', unstable: true]],
                                 sourceCodeEncoding: 'ISO-8859-1', enabledForFailure: true, aggregatingResults: true,
@@ -157,7 +161,7 @@ pipeline {
                         script {
                             echo 'Collecting Doxygen Warnings ...'
                             //System.setProperty("hudson.model.DirectoryBrowserSupport.CSP", "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self'; style-src 'self' 'unsafe-inline'; font-src *; sandbox allow-forms allow-scripts allow-same-origin;");
-                            sh "cd projects/ && make doxygen && cp doxygen/doxygen_warnings.log ../.results" 
+                            sh "make doxygen && cp doxygen/doxygen_warnings.log .results" 
                             recordIssues (
                                 qualityGates: [[threshold: threshold_doxygen, type: 'TOTAL', unstable: true]],
                                 sourceCodeEncoding: 'ISO-8859-1', enabledForFailure: true, aggregatingResults: true,
@@ -166,7 +170,7 @@ pipeline {
                             publishHTML target: ([ allowMissing: false,
                                                    alwaysLinkToLastBuild: true,
                                                    keepAll: true,
-                                                   reportDir: 'projects/doxygen/html',
+                                                   reportDir: 'doxygen/html',
                                                    reportFiles: 'index.html',
                                                    reportName: 'Doxygen HTML-Report'
                                                 ])
@@ -178,7 +182,7 @@ pipeline {
                         script {
                             echo 'Running Gcovr ...'
                             sh '''#!/bin/bash
-                                  projects/.docker/run_gcovr_on_subprojects.sh ${make_dirs_roots}
+                                  .docker/run_gcovr_on_subprojects.sh ${make_dirs_roots}
                                   cp projects/.results/gcovr_coverage.xml .results/gcovr_coverage.xml
                                   cp projects/.results/gcovr_*.html .results/
                             '''

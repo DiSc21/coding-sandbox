@@ -1,6 +1,6 @@
 #!/bin/bash
 
-abs_root_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")/../../"; pwd)"/"
+abs_root_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")/../"; pwd)"/"
 
 if [ $# -eq 0 ]; then
   echo "Pass at least one existing directory"

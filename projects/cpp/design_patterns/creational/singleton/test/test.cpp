@@ -35,9 +35,8 @@ TEST(test_case, simple_test2) // NOLINT
 }
 
 
-int main(int argc, char** argv) // NOLINT
+int main(int argc, char **argv) // NOLINT
 {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }
-

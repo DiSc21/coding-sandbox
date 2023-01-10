@@ -3,11 +3,11 @@
 
 #include "../src/DS_AbstractFactory.hpp"
 
-void EXPECT_LINUX(const PlatformWidget& data)   { EXPECT_EQ(PlatformType::LINUX, data.p_type); }
-void EXPECT_WINDOWS(const PlatformWidget& data) { EXPECT_EQ(PlatformType::WINDOWS, data.p_type); }
+void EXPECT_LINUX(const PlatformWidget &data) { EXPECT_EQ(PlatformType::LINUX, data.p_type); }
+void EXPECT_WINDOWS(const PlatformWidget &data) { EXPECT_EQ(PlatformType::WINDOWS, data.p_type); }
 
-void EXPECT_BUTTON(const PlatformWidget& data) { EXPECT_EQ(WidgetType::BUTTON, data.w_type); }
-void EXPECT_MENU(const PlatformWidget& data)   { EXPECT_EQ(WidgetType::MENU, data.w_type); }
+void EXPECT_BUTTON(const PlatformWidget &data) { EXPECT_EQ(WidgetType::BUTTON, data.w_type); }
+void EXPECT_MENU(const PlatformWidget &data) { EXPECT_EQ(WidgetType::MENU, data.w_type); }
 
 
 TEST(LinuxWidget, Button) // NOLINT
@@ -47,7 +47,7 @@ TEST(LinuxWidgetClient, display_window) // NOLINT
     uint8_t btn_num{0};
     uint8_t menu_num{0};
 
-    for(const auto& data: data_vec)
+    for (const auto &data : data_vec)
     {
         EXPECT_LINUX(data);
         (data.w_type == WidgetType::BUTTON) ? btn_num++ : menu_num++;
@@ -94,7 +94,7 @@ TEST(WindowsWidgetClient, display_window) // NOLINT
     uint8_t btn_num{0};
     uint8_t menu_num{0};
 
-    for(const auto& data: data_vec)
+    for (const auto &data : data_vec)
     {
         EXPECT_WINDOWS(data);
         (data.w_type == WidgetType::BUTTON) ? btn_num++ : menu_num++;
@@ -104,9 +104,8 @@ TEST(WindowsWidgetClient, display_window) // NOLINT
 }
 
 
-int main(int argc, char** argv) // NOLINT
+int main(int argc, char **argv) // NOLINT
 {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }
-

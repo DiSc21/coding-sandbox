@@ -46,9 +46,9 @@
 #ifndef DS_ABSTRACT_FACTORY_HPP
 #define DS_ABSTRACT_FACTORY_HPP
 
+#include <iostream>
 #include <memory>
 #include <vector>
-#include <iostream>
 
 enum class WidgetType : uint8_t
 {
@@ -65,7 +65,7 @@ enum class PlatformType : uint8_t
 struct PlatformWidget
 {
     PlatformType p_type;
-    WidgetType w_type;
+    WidgetType   w_type;
 };
 
 /// @brief ABSTRACT PRODUCT. It should define an interface which will be common to all products.
@@ -77,10 +77,10 @@ class Widget_
 
     Widget_()                     = default;
     Widget_(const Widget_ &other) = default;
-    Widget_(Widget_&& other)      = default;
+    Widget_(Widget_ &&other)      = default;
 
-    auto operator=(const Widget_& /*other*/) -> Widget_& = default;
-    auto operator=(Widget_&& /*other*/) noexcept -> Widget_& { return *this; }
+    auto operator=(const Widget_ & /*other*/) -> Widget_ & = default;
+    auto operator=(Widget_ && /*other*/) noexcept -> Widget_ & { return *this; }
 
     virtual ~Widget_() = default;
 };
@@ -104,7 +104,10 @@ class LinuxMenu : public Widget_
 class WindowsButton : public Widget_
 {
   public:
-    [[nodiscard]] auto draw() const -> PlatformWidget final { return PlatformWidget({PlatformType::WINDOWS, WidgetType::BUTTON}); }
+    [[nodiscard]] auto draw() const -> PlatformWidget final
+    {
+        return PlatformWidget({PlatformType::WINDOWS, WidgetType::BUTTON});
+    }
 };
 /// @brief Concrete WINDOWS product MENU
 class WindowsMenu : public Widget_
@@ -119,14 +122,14 @@ class Factory_
 {
   public:
     [[nodiscard]] virtual auto create_button() const -> std::shared_ptr<Widget_> = 0;
-    [[nodiscard]] virtual auto create_menu()   const -> std::shared_ptr<Widget_> = 0;
+    [[nodiscard]] virtual auto create_menu() const -> std::shared_ptr<Widget_>   = 0;
 
     Factory_()                      = default;
     Factory_(const Factory_ &other) = default;
-    Factory_(Factory_&& other)      = default;
+    Factory_(Factory_ &&other)      = default;
 
-    auto operator=(const Factory_& /*other*/) -> Factory_& = default;
-    auto operator=(Factory_&& /*other*/) noexcept -> Factory_& { return *this; }
+    auto operator=(const Factory_ & /*other*/) -> Factory_ & = default;
+    auto operator=(Factory_ && /*other*/) noexcept -> Factory_ & { return *this; }
 
     virtual ~Factory_() = default;
 };
@@ -134,15 +137,15 @@ class Factory_
 class LinuxFactory : public Factory_
 {
   public:
-    [[nodiscard]] auto create_button() const -> std::shared_ptr<Widget_>  final { return std::make_shared<LinuxButton>(); }
-    [[nodiscard]] auto create_menu()   const -> std::shared_ptr<Widget_>  final { return std::make_shared<LinuxMenu>();   }
+    [[nodiscard]] auto create_button() const -> std::shared_ptr<Widget_> final { return std::make_shared<LinuxButton>(); }
+    [[nodiscard]] auto create_menu() const -> std::shared_ptr<Widget_> final { return std::make_shared<LinuxMenu>(); }
 };
 /// @brief a CONCRETE FACTORY corresponding to LINUX product family
 class WindowsFactory : public Factory_
 {
   public:
-    [[nodiscard]] auto create_button() const -> std::shared_ptr<Widget_>  final { return std::make_shared<WindowsButton>(); }
-    [[nodiscard]] auto create_menu()   const -> std::shared_ptr<Widget_>  final { return std::make_shared<WindowsMenu>();   }
+    [[nodiscard]] auto create_button() const -> std::shared_ptr<Widget_> final { return std::make_shared<WindowsButton>(); }
+    [[nodiscard]] auto create_menu() const -> std::shared_ptr<Widget_> final { return std::make_shared<WindowsMenu>(); }
 };
 
 
@@ -154,30 +157,26 @@ class WindowsFactory : public Factory_
 /// @note Clients don't know the concrete classes of created
 ///       products either, since abstract factory methods
 ///       returns abstract products.
-class WidgetClient 
+class WidgetClient
 {
   public:
-    explicit WidgetClient(const std::shared_ptr<Factory_>& factory) : factory_(factory) {}
+    explicit WidgetClient(const std::shared_ptr<Factory_> &factory) : factory_(factory) {}
 
     [[nodiscard]] auto display_window() -> std::vector<PlatformWidget>
     {
-       std::vector<std::shared_ptr<Widget_>> widgets = {
-           factory_->create_button(),
-           factory_->create_menu()
-       };
+        std::vector<std::shared_ptr<Widget_>> widgets = {factory_->create_button(), factory_->create_menu()};
 
-       std::vector<PlatformWidget> concrete_widgets{};
-       for(const auto& widget: widgets)
-       {
-           static_cast<void>(concrete_widgets.emplace_back(widget->draw()));
-       }
+        std::vector<PlatformWidget> concrete_widgets{};
+        for (const auto &widget : widgets)
+        {
+            static_cast<void>(concrete_widgets.emplace_back(widget->draw()));
+        }
 
-       return concrete_widgets;
+        return concrete_widgets;
     }
 
   private:
-    const std::shared_ptr<Factory_>& factory_;
+    const std::shared_ptr<Factory_> &factory_;
 };
 
 #endif
-

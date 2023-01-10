@@ -48,48 +48,47 @@ TEST(ObjectBase_, doWhatNeedsToBeDone) // NOLINT
 {
     auto objects = TestFacMeth::createObjects();
 
-    std::set<uint16_t> valid_nums{1,2};
+    std::set<uint16_t> valid_nums{1, 2};
 
-    for (const auto& obj_ptr: objects)
+    for (const auto &obj_ptr : objects)
     {
         const auto num = obj_ptr->doWhatNeedsToBeDone();
         EXPECT_TRUE(valid_nums.find(num) != valid_nums.end());
         valid_nums.erase(num);
     }
-        
+
     EXPECT_EQ(0, valid_nums.size());
 }
 
 
 TEST(ObjectHandler, doWhatNeedsToBeDone) // NOLINT
 {
-    ObjectHandler obj_handler; 
+    ObjectHandler obj_handler;
 
     EXPECT_EQ(uint8_t(2), obj_handler.doWhatNeedsToBeDone());
 }
 
 TEST(ObjectHandler, processReturnHorsts) // NOLINT
 {
-    ObjectHandler objects;
+    ObjectHandler     objects;
     std::vector<bool> vec{};
     objects.processReturnHorsts(vec);
 
-    uint8_t num_enabled = 0;
+    uint8_t num_enabled  = 0;
     uint8_t num_disabled = 0;
-    for(const auto& is_used: vec)
+    for (const auto &is_used : vec)
     {
-         (is_used) ? ++num_enabled : ++num_disabled;
+        (is_used) ? ++num_enabled : ++num_disabled;
     }
-    
+
     EXPECT_EQ(uint8_t(1), uint8_t(vec.size()));
     EXPECT_EQ(uint8_t(1), num_enabled);
     EXPECT_EQ(uint8_t(0), num_disabled);
 }
 
 
-int main(int argc, char** argv) // NOLINT
+int main(int argc, char **argv) // NOLINT
 {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }
-

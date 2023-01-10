@@ -7,8 +7,7 @@ const ArmorPart::Type ARMOR_TYPE = ArmorPart::Type::FEET;
 const std::string     ARMOR_NAME = "Simple Shoes";
 const uint8_t         PROTECTION = 1;
 
-const ArmorPart   simple_shoes(ARMOR_TYPE, ARMOR_NAME, PROTECTION);
-
+const ArmorPart simple_shoes(ARMOR_TYPE, ARMOR_NAME, PROTECTION);
 
 TEST(ArmorPart, getType) // NOLINT
 {
@@ -24,8 +23,6 @@ TEST(ArmorPart, getProtection) // NOLINT
 {
     EXPECT_EQ(PROTECTION, simple_shoes.getProtection());
 }
-
-
 
 TEST(ArmorBuilder_Civilian, getTypeProtection) // NOLINT
 {
@@ -57,8 +54,6 @@ TEST(ArmorBuilder_Wizard, getTypeProtection) // NOLINT
     EXPECT_EQ(0, armor.getTypeProtection(ArmorPart::Type::HANDS));
 }
 
-
-
 TEST(ArmorBuilder_Civilian, getProtection) // NOLINT
 {
     const auto armor = ArmorBuilder_Civilian().buildArmor();
@@ -77,10 +72,8 @@ TEST(ArmorBuilder_Wizard, getProtection) // NOLINT
     EXPECT_LT(armor.getTypeProtection(ArmorPart::Type::BODY), armor.getProtection());
 }
 
-
-int main(int argc, char** argv) // NOLINT
+int main(int argc, char **argv) // NOLINT
 {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }
-

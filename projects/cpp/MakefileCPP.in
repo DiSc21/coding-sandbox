@@ -58,6 +58,10 @@ coverage-cobertura:
 cpp-check:
 	${cmd} "cppcheck --force --verbose --check-config --enable=all --xml --xml-version=2 ./src/ 2> build/cppcheck.xml"
 
+.PHONY: cpplint
+cpplint:
+	${cmd} "cpplint --quiet --counting=detailed --filter=-whitespace/indent,-whitespace/braces,-build/header_guard --linelength=130 --output=eclipse --recursive ./src/ 2> build/cpplint.log || true"
+
 .PHONY: clang-tidy
 clang-tidy:
 	${cmd} "run-clang-tidy-14 -p build -header-filter=.* 2>&1 | tee -a build/clang_tidy_result; cd build; cat clang_tidy_result | sed 's/\x1B\[[0-9;]\{1,\}[A-Za-z]//g'"

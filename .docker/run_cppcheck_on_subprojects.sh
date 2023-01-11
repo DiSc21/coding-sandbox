@@ -24,6 +24,7 @@ cat ${abs_root_dir}projects/cpp_file_list
 
 run_cmd=${abs_root_dir}/.docker/run_docker.sh
 ${run_cmd} "if ! [ -d "${result_dir}" ]; then mkdir ${result_dir}; fi"
-${run_cmd} "cd ${abs_root_dir}; cppcheck --force --verbose --enable=all --xml --xml-version=2 --file-list=${abs_root_dir}projects/cpp_file_list 2> ${result_dir}/cppcheck.xml"
+${run_cmd} "cd ${abs_root_dir}; cppcheck --check-config --xml --xml-version=2 --file-list=${abs_root_dir}projects/cpp_file_list 2> ${result_dir}/cppcheck_config.xml"
+${run_cmd} "cd ${abs_root_dir}; cppcheck --force --verbose --enable=all --suppress=missingIncludeSystem --xml --xml-version=2 --file-list=${abs_root_dir}projects/cpp_file_list 2> ${result_dir}/cppcheck.xml"
 
 rm ${abs_root_dir}projects/cpp_file_list

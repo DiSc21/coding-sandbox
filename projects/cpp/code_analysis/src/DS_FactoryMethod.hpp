@@ -5,6 +5,7 @@
 #include <memory>
 #include <vector>
 
+/// @brief who cares
 class ObjectBase_
 {
   public:
@@ -26,7 +27,6 @@ class ObjectBase_
     //    void disable(){ is_used_ = false; }
     //
     //  private:
-
     /// @brief just some simple member used for ObjectHandler's custom forEach
     /// (see below)
     bool is_used_{true};

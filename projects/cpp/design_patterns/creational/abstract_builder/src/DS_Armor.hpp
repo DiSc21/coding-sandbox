@@ -1,7 +1,20 @@
-//----------------------------------------------------------------------------------------------------
-//- BUILDER Pattern
-//---------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------------------------
+//*****************************************************************************************|
+//     ______ _              ____            _      ,                      _               |
+//    (_) |  | |            (|   \ o        | |    /|   /         o       | |              |
+//        |  | |     _       |    |    ,_   | |     |__/   _  _       __, | |   _|_        |
+//      _ |  |/ \   |/      _|    ||  /  |  |/_)    | \   / |/ |  |  /  | |/ \   |         |
+//     (_/   |   |_/|__/   (/\___/ |_/   |_/| \_/   |  \_/  |  |_/|_/\_/|/|   |_/|_/       |
+//    *****************************************************************/|***********       |
+//                                                                     \|                  |
+//_________________________________________________________________________________________|
+//                                                                                         |
+// Copyright (c) 2023  DiSc21-Fantasies@TDK. All rights reserved.                          |
+// None of the code is licensed under any License.                                         |
+//_________________________________________________________________________________________|
+//
+//------------------------------------------------------------------------------------------
+//- BUILDER Pattern ------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------
 // The builder pattern "separates the construction of a complex object from its
 // representation".
 // - This allows to create different representations with the same construction
@@ -11,7 +24,7 @@
 // - The construction process is generic to be be used for creation of different
 // representations.
 //
-//----------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------
 //
 // COMPONENTS:
 // -----------
@@ -33,7 +46,7 @@
 //   director then calls methods of the concrete builder in the correct order to
 //   generate the product object.
 //
-//----------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------
 //
 // ADVANTAGES:
 // -----------
@@ -45,14 +58,14 @@
 // building process.
 // - Usually yields a better design flexibility
 // - Usually yields a better readable code.
-//----------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------
 //
 // DISADVANTAGES:
 // --------------
 // - Number of lines of code increase to double
 // - Requires a separate ConcreteBuilder for each different type of Product.
 //
-//----------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------
 
 #ifndef DS_ARMOR_HPP
 #define DS_ARMOR_HPP
@@ -63,11 +76,13 @@
 #include <numeric>
 #include <set>
 #include <string>
+#include <utility>
 
 /// @brief Just a an auxiliary class used in the PRODUCT class
 class ArmorPart
 {
   public:
+    /// @brief simple enum descriping different armor/body parts
     enum class Type : uint8_t
     {
         BODY,
@@ -81,16 +96,26 @@ class ArmorPart
 
     ArmorPart() = delete;
 
-    // clang-format off
+    /// @brief construnctor for armor parts
+    /// @param type the type of the armor part
+    /// @param name the name of the armor part
+    /// @param protection the value of protection
     explicit ArmorPart(const Type type, std::string name = "", const uint8_t protection = 0)
         : type_(type), name_(std::move(name)), protection_(protection){}
-    // clang-format on
 
+    /// @brief comparison operator needed to collect ArmorPart in set
+    /// @param rhs the ArmorPart standing on the rhs of the operator
+    /// @return boolean, true if type smaller than rhs type
     [[nodiscard]] auto operator<(const ArmorPart &rhs) const -> bool { return (type_ < rhs.type_); }
 
+    /// @brief type getter
+    /// @return type of ArmorPart
     [[nodiscard]] auto getType() const -> Type { return type_; }
-    [[nodiscard]] auto getName() const -> std::string { return name_; }
-
+    /// @brief name getter
+    /// @return name of ArmorPart
+    [[nodiscard]] auto getName() const -> std::string { return name_; } ///> @brief type getter > @return type of ArmorPart
+    /// @brief protection getter
+    /// @return protection of ArmorPart
     [[nodiscard]] auto getProtection() const -> uint8_t { return protection_; }
 
   private:
@@ -107,31 +132,39 @@ class ArmorPart
 class Armor
 {
   public:
-    Armor() = default;
+    Armor() = default; ///> the defaulted default constructor
 
+    /// @brief single argument constructor creating armor from set of Armor parts
+    /// @param parts set of armor parts
     explicit Armor(const std::set<ArmorPart> &parts)
     {
-        for (const auto &part : parts)
+        for ( const auto &part : parts )
         {
             static_cast<void>(armor_parts_.insert({part.getType(), part}));
         }
     }
 
+    /// @brief getter protection value for armor part-type
+    /// @param type the armor part-type protection value is requested
+    /// @return protection value for requested part
     [[nodiscard]] auto getTypeProtection(const ArmorPart::Type type) const -> uint8_t
     {
         const auto &part_it = armor_parts_.find(type);
         return (part_it != armor_parts_.end()) ? part_it->second.getProtection() : 0;
     }
 
+    /// @brief getter protection value for full armor
+    /// @return protection value for full armor
     [[nodiscard]] auto getProtection() const -> uint8_t
     {
-        return std::accumulate(std::begin(armor_parts_),
-                               std::end(armor_parts_),
-                               0,
+        // clang-format off
+        return std::accumulate(std::begin(armor_parts_), std::end(armor_parts_), 0,
                                [](const std::uint16_t sum, const auto &part) { return sum + part.second.getProtection(); });
+        // clang-format on
     }
 
   private:
+    /// @brief map of armorPartType to equiped armor part
     std::map<ArmorPart::Type, ArmorPart> armor_parts_{};
 };
 
@@ -139,28 +172,35 @@ class Armor
 class ArmorBuilder_
 {
   public:
+    /// @brief pure virual/abstract build armor function
+    /// @return Armor, i.e. collection of different armor parts
     [[nodiscard]] virtual auto buildArmor() -> Armor = 0;
 
-    ArmorBuilder_()                                = default;
-    ArmorBuilder_(const ArmorBuilder_ & /*other*/) = default;
-    ArmorBuilder_(ArmorBuilder_ && /*other*/)      = default;
+    ArmorBuilder_()                                                = default; ///> default-constructor
+    ArmorBuilder_(const ArmorBuilder_ & /*< other armor builder*/) = default; ///> copy-constructor
+    ArmorBuilder_(ArmorBuilder_ && /*< other armor builder*/)      = default; ///> move-constructor
 
-    auto operator=(const ArmorBuilder_ & /*other*/) -> ArmorBuilder_ & = default;
-    auto operator=(ArmorBuilder_ && /*other*/) noexcept -> ArmorBuilder_ & { return *this; }
-    virtual ~ArmorBuilder_() = default;
+    /// @return ArmorBuilder
+    auto operator=(const ArmorBuilder_ & /*< other*/) -> ArmorBuilder_ & = default;            ///> =ops
+    /// @return ArmorBuilder
+    auto operator=(ArmorBuilder_ && /*< other*/) noexcept -> ArmorBuilder_ & { return *this; } ///> =ops
 
-    static const uint8_t MAGIC_1  = 1;
-    static const uint8_t MAGIC_3  = 3;
-    static const uint8_t MAGIC_4  = 4;
-    static const uint8_t MAGIC_5  = 5;
-    static const uint8_t MAGIC_7  = 6;
-    static const uint8_t MAGIC_12 = 12;
+    virtual ~ArmorBuilder_() = default; ///> destructor
+
+    static const uint8_t MAGIC_1  = 1;  ///> magic number as static const member
+    static const uint8_t MAGIC_3  = 3;  ///> magic number as static const member
+    static const uint8_t MAGIC_4  = 4;  ///> magic number as static const member
+    static const uint8_t MAGIC_5  = 5;  ///> magic number as static const member
+    static const uint8_t MAGIC_7  = 6;  ///> magic number as static const member
+    static const uint8_t MAGIC_12 = 12; ///> magic number as static const member
 };
 
 /// @brief a so-called CONCRETE BUILDER
 class ArmorBuilder_Civilian : public ArmorBuilder_
 {
   public:
+    /// @brief concreate buildArmor function for ArmorBuilder_Civilian
+    /// @return Armor adequate for Civilian, ... i.e. simple cloths
     [[nodiscard]] auto buildArmor() -> Armor override
     {
         return Armor({ArmorPart(ArmorPart::Type::BODY, "Plain Shirt", MAGIC_1),
@@ -173,6 +213,8 @@ class ArmorBuilder_Civilian : public ArmorBuilder_
 class ArmorBuilder_Warrior : public ArmorBuilder_
 {
   public:
+    /// @brief concreate buildArmor function for ArmorBuilder_Warrior
+    /// @return Armor adequate for Warriors
     [[nodiscard]] auto buildArmor() -> Armor override
     {
         return Armor({ArmorPart(ArmorPart::Type::BODY, "Leather Chest Protector", MAGIC_12),
@@ -187,6 +229,8 @@ class ArmorBuilder_Warrior : public ArmorBuilder_
 class ArmorBuilder_Wizard : public ArmorBuilder_
 {
   public:
+    /// @brief concreate buildArmor function for ArmorBuilder_Wizard
+    /// @return Armor adequate for Wizards
     [[nodiscard]] auto buildArmor() -> Armor override
     {
         return Armor({ArmorPart(ArmorPart::Type::BODY, "Magic Rope", MAGIC_4),
@@ -201,6 +245,7 @@ class ArmorBuilder_Wizard : public ArmorBuilder_
 class NPC
 {
   public:
+    /// @brief enum for warrior/wizard/civilian npc
     enum class Type : uint8_t
     {
         CIVILIAN,
@@ -209,9 +254,13 @@ class NPC
     };
 
     NPC() = delete;
+
+    /// @brief parameterized NPC constructor
+    /// @param name of the NPC
+    /// @param type of the NPC
     NPC(std::string name, const Type type) : name_(std::move(name)), type_(type)
     {
-        switch (type)
+        switch ( type )
         {
             case Type::CIVILIAN:
                 armor_ = ArmorBuilder_Civilian().buildArmor();
@@ -228,32 +277,46 @@ class NPC
         }
     }
 
+    /// @brief name getter
+    /// @return name of NPC
     [[nodiscard]] auto getName() const -> std::string { return name_; }
+    /// @brief type getter
+    /// @return type of NPC
     [[nodiscard]] auto getType() const -> Type { return type_; }
+    /// @brief Armor getter
+    /// @return Armor of NPC
     [[nodiscard]] auto getArmor() const -> Armor { return armor_; }
 
   private:
-    const std::string name_;
-    const Type        type_;
-
-    Armor armor_;
+    const std::string name_;  ///> name of the NPC
+    const Type        type_;  ///> type of the NPC
+    Armor             armor_; ///> armor of the NPC
 };
 
-/// @brief just a simple collection of functions for creation of different NPC
-/// types
+/// @brief just a simple collection of functions for creation of different NPC types
 class NPCBuilder
 {
   public:
+
+    /// @brief function building a civilian NPC with civilian Armor
+    /// @param name of the NPC
+    /// @return shared_ptr to freshly build NPC
     static auto civilian(const std::string &name) -> std::shared_ptr<NPC>
     {
         return std::make_shared<NPC>(name, NPC::Type::CIVILIAN);
     }
 
+    /// @brief function building a warrior NPC with civilian Armor
+    /// @param name of the NPC
+    /// @return shared_ptr to freshly build NPC
     static auto warrior(const std::string &name) -> std::shared_ptr<NPC>
     {
         return std::make_shared<NPC>(name, NPC::Type::WARRIOR);
     }
 
+    /// @brief function building a wizard NPC with civilian Armor
+    /// @param name of the NPC
+    /// @return shared_ptr to freshly build NPC
     static auto wizard(const std::string &name) -> std::shared_ptr<NPC> { return std::make_shared<NPC>(name, NPC::Type::WIZARD); }
 };
 

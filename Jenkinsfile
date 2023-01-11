@@ -1,11 +1,27 @@
+//*****************************************************************************************|
+//     ______ _              ____            _      ,                      _               |
+//    (_) |  | |            (|   \ o        | |    /|   /         o       | |              |
+//        |  | |     _       |    |    ,_   | |     |__/   _  _       __, | |   _|_        |
+//      _ |  |/ \   |/      _|    ||  /  |  |/_)    | \   / |/ |  |  /  | |/ \   |         |
+//     (_/   |   |_/|__/   (/\___/ |_/   |_/| \_/   |  \_/  |  |_/|_/\_/|/|   |_/|_/       |
+//                                                                     /|                  |
+//                                                                     \|                  |
+//_________________________________________________________________________________________|
+//                                                                                         |
+// Copyright 2023 DiSc21-Fantasies-21 @ TDK. All rights reserved.                          |
+// None of the code is licensed under any License.                                         |
+//_________________________________________________________________________________________|
+
 /* Requires the Docker Pipeline plugin */
 pipeline {
     agent any
     environment {
         def make_dirs_roots = "projects/cpp/code_analysis projects/cpp/design_patterns"
         def make_dirs = sh(script: ".docker/find_make_directories.sh ${make_dirs_roots}", returnStdout: true).trim()
+
         // thresholds for various code analysis tools
-        def threshold_failed_tests = 1
+        // ------------------------------------------
+        def threshold_unit_tests = 1
         def threshold_flawfinder = 1
         def threshold_clang_tidy = 1
         def threshold_cppcheck = 1
@@ -20,9 +36,21 @@ pipeline {
             name: 'something_to_choose_from',
             choices: ['OptionA', 'OptionB', 'AndSoOn'],
             description: 'some choices not sure what to choose yet'
-         )
-         string(name: 'test_dir', defaultValue: 'projects/cpp/code_analysis projects/cpp', description: 'List of directories to build')
-         booleanParam(name: 'build_only', defaultValue: false, description: 'Build only skip static code analysis?')
+        )
+
+        //string(name: 'test_dir', defaultValue: 'projects/cpp', description: 'Root directory for projects to build and test')
+
+        // boolean various code analysis stages
+        // ------------------------------------
+        booleanParam(name: 'unittests',  defaultValue: true, description: 'Check if unit test stage should be run')
+        booleanParam(name: 'flawfinder', defaultValue: true, description: 'Check if flawfinder stage should be run')
+        booleanParam(name: 'clangtidy',  defaultValue: true, description: 'Check if clang-tidy stage should be run')
+        booleanParam(name: 'cppcheck',   defaultValue: true, description: 'Check if cppcheck stage should be run')
+        booleanParam(name: 'cpplint',    defaultValue: true, description: 'Check if cpplint stage should be run')
+        booleanParam(name: 'doxygen',    defaultValue: true, description: 'Check if doxygen stage should be run')
+        booleanParam(name: 'cmake',      defaultValue: true, description: 'Check if cmake stage should be run')
+        booleanParam(name: 'clang',      defaultValue: true, description: 'Check if clang stage should be run')
+        booleanParam(name: 'gcc',        defaultValue: true, description: 'Check if gcc stage should be run')
     }
     stages {
         stage('Build Docker') {
@@ -86,6 +114,9 @@ pipeline {
         stage('Code Quality steps') {
             stages {
                 stage('Cmake') {
+                    when {
+                        expression { return params.cmake }
+                    }
                     steps {
                         echo 'Collecting CMake Warnings ...'
                         recordIssues (
@@ -96,6 +127,9 @@ pipeline {
                     }
                 }
                 stage('GCC') {
+                    when {
+                        expression { return params.gcc }
+                    }
                     steps {
                         echo 'Collecting GCC Warnings ...'
                         recordIssues (
@@ -106,6 +140,9 @@ pipeline {
                     }
                 }
                 stage('Clang') {
+                    when {
+                        expression { return params.clang }
+                    }
                     steps {
                         echo 'Collecting Clang Warnings ...'
                         recordIssues (
@@ -116,6 +153,9 @@ pipeline {
                     }
                 }
                 stage('Clang-Tidy') {
+                    when {
+                        expression { return params.clangtidy }
+                    }
                     steps {
                         script {
                             echo 'Running Clang-Tidy ...'
@@ -132,22 +172,34 @@ pipeline {
                     }
                 }
                 stage('CppCheck') {
+                    when {
+                        expression { return params.cppcheck }
+                    }
                     steps {
                         script {
                             echo 'Running CppCheck ...'
                             sh '''#!/bin/bash
                                   .docker/run_cppcheck_on_subprojects.sh ${make_dirs_roots}
                                   cp projects/.results/cppcheck.xml .results/cppcheck.xml
+                                  cp projects/.results/cppcheck_config.xml .results/cppcheck_config.xml
                             '''
                             recordIssues (
                                 qualityGates: [[threshold: threshold_cppcheck, type: 'TOTAL', unstable: true]],
                                 sourceCodeEncoding: 'ISO-8859-1', enabledForFailure: true, aggregatingResults: true,
                                 tools: [cppCheck(pattern:'**.results/cppcheck.xml')]
                             )
+                            recordIssues (
+                                qualityGates: [[threshold: threshold_cppcheck, type: 'TOTAL', unstable: true]],
+                                sourceCodeEncoding: 'ISO-8859-1', enabledForFailure: true, aggregatingResults: true,
+                                tools: [cppCheck(pattern:'**.results/cppcheck_config.xml', id: 'cppcheck-config', name: 'CppCheck Config')]
+                            )
                         }
                     }
                 }
                 stage('CppLint') {
+                    when {
+                        expression { return params.cpplint }
+                    }
                     steps {
                         script {
                             echo 'Running CppStyle ...'
@@ -164,6 +216,9 @@ pipeline {
                     }
                 }
                 stage('Flawfinder') {
+                    when {
+                        expression { return params.flawfinder }
+                    }
                     steps {
                         script {
                             echo 'Collecting Flawfinder Warnings ...'
@@ -182,11 +237,14 @@ pipeline {
                     }
                 }
                 stage('Doxygen') {
+                    when {
+                        expression { return params.doxygen }
+                    }
                     steps {
                         script {
                             echo 'Collecting Doxygen Warnings ...'
                             //System.setProperty("hudson.model.DirectoryBrowserSupport.CSP", "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self'; style-src 'self' 'unsafe-inline'; font-src *; sandbox allow-forms allow-scripts allow-same-origin;");
-                            sh "make doxygen && cp doxygen/doxygen_warnings.log .results" 
+                            sh "make doxygen && cp doxygen/doxygen_warnings.log .results"
                             recordIssues (
                                 qualityGates: [[threshold: threshold_doxygen, type: 'TOTAL', unstable: true]],
                                 sourceCodeEncoding: 'ISO-8859-1', enabledForFailure: true, aggregatingResults: true,
@@ -196,11 +254,14 @@ pipeline {
                     }
                 }
                 stage('Test Results') {
+                    when {
+                        expression { return params.unittests }
+                    }
                     steps {
                         script {
                             echo 'Collecting Test Results ...'
                             recordIssues (
-                                qualityGates: [[threshold: threshold_failed_tests, type: 'TOTAL', unstable: true]],
+                                qualityGates: [[threshold: threshold_unit_tests, type: 'TOTAL', unstable: true]],
                                 sourceCodeEncoding: 'ISO-8859-1', enabledForFailure: true, aggregatingResults: true,
                                 tools: [junitParser(pattern:'projects/**/Testing/main.xml', id: 'test-results', name: 'Unit-Test')]
                             )
@@ -208,6 +269,9 @@ pipeline {
                     }
                 }
                 stage('Coverage') {
+                    when {
+                        expression { return params.unittests }
+                    }
                     steps {
                         script {
                             echo 'Running Gcovr ...'
@@ -224,21 +288,18 @@ pipeline {
     }
     post {
         always {
-            echo 'I will always say Hello again!'
-            steps {
-                publishCoverage adapters: [cobertura('**.results/gcovr_coverage.xml')]
-                publishHTML target: ([ allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true,
-                                       reportDir: '.results', reportFiles: 'gcovr_coverage.html',
-                                       reportName: 'Gcovr Coverage html-Report'])
-                publishHTML target: ([ allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true,
-                                       reportDir: 'doxygen/html', reportFiles: 'index.html',
-                                       reportName: 'Doxygen HTML-Report'])
-                publishHTML target: ([ allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true,
-                                       reportDir: '.results', reportFiles: 'flawfinder.html',
-                                       reportName: 'Flawfinder HTML-Report'])
-            }
+            echo 'Perfoming post build/check steps'
+            publishCoverage adapters: [cobertura('**.results/gcovr_coverage.xml')]
+            publishHTML target: ([ allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true,
+                                   reportDir: '.results', reportFiles: 'gcovr_coverage.html',
+                                   reportName: 'Gcovr Coverage html-Report'])
+            publishHTML target: ([ allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true,
+                                   reportDir: 'doxygen/html', reportFiles: 'index.html',
+                                   reportName: 'Doxygen HTML-Report'])
+            publishHTML target: ([ allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true,
+                                   reportDir: '.results', reportFiles: 'flawfinder.html',
+                                   reportName: 'Flawfinder HTML-Report'])
         }
     }
 }
-
 

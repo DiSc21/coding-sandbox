@@ -60,7 +60,7 @@ cppcheck:
 
 .PHONY: cpplint
 cpplint:
-	${cmd} "cpplint --quiet --counting=detailed --filter=-whitespace/indent,-whitespace/braces,-build/header_guard --linelength=130 --output=eclipse --recursive ./src/ 2> build/cpplint.log || true"
+	${cmd} "cpplint --quiet --counting=detailed --filter=-whitespace/indent,-whitespace/braces,-whitespace/comments,-whitespace/blank_line,-build/header_guard,-legal/copyright,-runtime/references --linelength=140 --output=eclipse --recursive ./src/ 2> build/cpplint.log || true"
 
 .PHONY: clang-tidy
 clang-tidy:

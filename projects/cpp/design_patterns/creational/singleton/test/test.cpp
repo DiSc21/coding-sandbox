@@ -3,9 +3,12 @@
 
 #include "../src/DS_Singleton.hpp"
 
+/// @brief simple test class
 class TestCount
 {
   public:
+    /// @brief simple testfunction calling getInstance and returning instance count
+    /// @return get the count number
     [[nodiscard]] static auto getSingletonCount() -> int
     {
         auto singleton = DS_Singleton::getInstance();

@@ -5,14 +5,14 @@
 #include <gtkmm-3.0/gtkmm/applicationwindow.h>
 #include <gtkmm-3.0/gtkmm/button.h>
 
-// main window of the application
+/// @brief main window of the application
 class DS_HelloGTKWindow : public Gtk::ApplicationWindow
 {
   public:
     DS_HelloGTKWindow();
 
   private:
-    Gtk::Button btn_;
+    Gtk::Button btn_; ///> simple gtk button
 };
 
 #endif

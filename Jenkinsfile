@@ -2,13 +2,15 @@
 pipeline {
     agent any
     environment {
-        //def make_dirs = sh(script: "./docker/find_make_directories.sh projects/cpp/code_analysis projects/cpp/design_patterns", returnStdout: true).trim() as Integer
         def make_dirs_roots = "projects/cpp/code_analysis projects/cpp/design_patterns"
         def make_dirs = sh(script: ".docker/find_make_directories.sh ${make_dirs_roots}", returnStdout: true).trim()
+        // thresholds for various code analysis tools
+        def threshold_failed_tests = 1
+        def threshold_flawfinder = 1
         def threshold_clang_tidy = 1
-        def threshold_cppcheck = 2
-        def threshold_cpplint = 7
-        def threshold_doxygen = 126
+        def threshold_cppcheck = 1
+        def threshold_cpplint = 1
+        def threshold_doxygen = 1
         def threshold_cmake = 1
         def threshold_clang = 1
         def threshold_gcc = 1
@@ -83,6 +85,16 @@ pipeline {
         }
         stage('Code Quality steps') {
             stages {
+                stage('Cmake') {
+                    steps {
+                        echo 'Collecting CMake Warnings ...'
+                        recordIssues (
+                            qualityGates: [[threshold: threshold_cmake, type: 'TOTAL', unstable: true]],
+                            sourceCodeEncoding: 'ISO-8859-1', enabledForFailure: true, aggregatingResults: true,
+                            tools: [cmake(pattern:'**.results/cmake_builds.log')]
+                        )
+                    }
+                }
                 stage('GCC') {
                     steps {
                         echo 'Collecting GCC Warnings ...'
@@ -100,16 +112,6 @@ pipeline {
                             qualityGates: [[threshold: threshold_clang, type: 'TOTAL', unstable: true]],
                             sourceCodeEncoding: 'ISO-8859-1', enabledForFailure: true, aggregatingResults: true,
                             tools: [clang(pattern:'**.results/clang_build.log')]
-                        )
-                    }
-                }
-                stage('Cmake') {
-                    steps {
-                        echo 'Collecting CMake Warnings ...'
-                        recordIssues (
-                            qualityGates: [[threshold: threshold_cmake, type: 'TOTAL', unstable: true]],
-                            sourceCodeEncoding: 'ISO-8859-1', enabledForFailure: true, aggregatingResults: true,
-                            tools: [cmake(pattern:'**.results/cmake_builds.log')]
                         )
                     }
                 }
@@ -153,10 +155,6 @@ pipeline {
                                 sh "cd ${it} && make cpplint"
                                 sh "echo ${it}/build/cpplint.log | xargs cat  >> .results/cpplint.log"
                             }
-                            //sh '''#!/bin/bash
-                            //      .docker/run_docker.sh "cpplint --quiet --counting=detailed --filter=-whitespace/indent,-whitespace/braces,-build/header_guard --linelength=130 --output=eclipse --recursive --exclude=**/build_clang/** --exclude=**/build/** --exclude=**/test/** ./projects/cpp/ 2> projects/.results/cpplint.log" 
-                            //      cp projects/.results/cpplint.log .results/cpplint.log
-                            //'''
                             recordIssues (
                                 qualityGates: [[threshold: threshold_cpplint, type: 'TOTAL', unstable: true]],
                                 sourceCodeEncoding: 'ISO-8859-1', enabledForFailure: true, aggregatingResults: true,
@@ -165,14 +163,20 @@ pipeline {
                         }
                     }
                 }
-                stage('Test Results') {
+                stage('Flawfinder') {
                     steps {
                         script {
-                            echo 'Collecting Test Results ...'
+                            echo 'Collecting Flawfinder Warnings ...'
+                            sh '''#!/bin/bash
+                                  tmp_dirs=${make_dirs}","
+                                  src_dirs=$(echo ${tmp_dirs//,//src })
+                                  .docker/run_docker.sh "flawfinder --context ${src_dirs} >> .results/flawfinder.log"
+                                  .docker/run_docker.sh "flawfinder --html --context ${src_dirs} >> .results/flawfinder.html"
+                            '''
                             recordIssues (
-                                qualityGates: [[threshold: threshold_cpplint, type: 'TOTAL', unstable: true]],
+                                qualityGates: [[threshold: threshold_flawfinder, type: 'TOTAL', unstable: true]],
                                 sourceCodeEncoding: 'ISO-8859-1', enabledForFailure: true, aggregatingResults: true,
-                                tools: [junitParser(pattern:'projects/**/Testing/main.xml', id: 'junit-test-results', name: 'unit-tests')]
+                                tools: [flawfinder(pattern:'**.results/flawfinder.log')]
                             )
                         }
                     }
@@ -188,13 +192,18 @@ pipeline {
                                 sourceCodeEncoding: 'ISO-8859-1', enabledForFailure: true, aggregatingResults: true,
                                 tools: [doxygen(pattern:'**.results/doxygen_warnings.log')]
                             )
-                            publishHTML target: ([ allowMissing: false,
-                                                   alwaysLinkToLastBuild: true,
-                                                   keepAll: true,
-                                                   reportDir: 'doxygen/html',
-                                                   reportFiles: 'index.html',
-                                                   reportName: 'Doxygen HTML-Report'
-                                                ])
+                        }
+                    }
+                }
+                stage('Test Results') {
+                    steps {
+                        script {
+                            echo 'Collecting Test Results ...'
+                            recordIssues (
+                                qualityGates: [[threshold: threshold_failed_tests, type: 'TOTAL', unstable: true]],
+                                sourceCodeEncoding: 'ISO-8859-1', enabledForFailure: true, aggregatingResults: true,
+                                tools: [junitParser(pattern:'projects/**/Testing/main.xml', id: 'test-results', name: 'Unit-Test')]
+                            )
                         }
                     }
                 }
@@ -207,17 +216,26 @@ pipeline {
                                   cp projects/.results/gcovr_coverage.xml .results/gcovr_coverage.xml
                                   cp projects/.results/gcovr_*.html .results/
                             '''
-                            publishCoverage adapters: [cobertura('**.results/gcovr_coverage.xml')]
-                            publishHTML target: ([ allowMissing: false,
-                                                   alwaysLinkToLastBuild: true,
-                                                   keepAll: true,
-                                                   reportDir: '.results',
-                                                   reportFiles: 'gcovr_coverage.html',
-                                                   reportName: 'Gcovr Coverage html-Report'
-                                                ])
                         }
                     }
                 }
+            }
+        }
+    }
+    post {
+        always {
+            echo 'I will always say Hello again!'
+            steps {
+                publishCoverage adapters: [cobertura('**.results/gcovr_coverage.xml')]
+                publishHTML target: ([ allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true,
+                                       reportDir: '.results', reportFiles: 'gcovr_coverage.html',
+                                       reportName: 'Gcovr Coverage html-Report'])
+                publishHTML target: ([ allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true,
+                                       reportDir: 'doxygen/html', reportFiles: 'index.html',
+                                       reportName: 'Doxygen HTML-Report'])
+                publishHTML target: ([ allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true,
+                                       reportDir: '.results', reportFiles: 'flawfinder.html',
+                                       reportName: 'Flawfinder HTML-Report'])
             }
         }
     }

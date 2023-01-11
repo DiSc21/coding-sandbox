@@ -14,7 +14,7 @@ build/main:
 
 .PHONY: test
 test:
-	${cmd} "cmake --build build -t test ARGS=-V"
+	${cmd} " mkdir -p build/Testing; export GTEST_OUTPUT="xml:Testing/"; cmake --build build -t test ARGS=-V"
 
 .PHONY: build/test
 build/test: build/main test coverage

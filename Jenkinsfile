@@ -165,6 +165,18 @@ pipeline {
                         }
                     }
                 }
+                stage('Test Results') {
+                    steps {
+                        script {
+                            echo 'Collecting Test Results ...'
+                            recordIssues (
+                                qualityGates: [[threshold: threshold_cpplint, type: 'TOTAL', unstable: true]],
+                                sourceCodeEncoding: 'ISO-8859-1', enabledForFailure: true, aggregatingResults: true,
+                                tools: [junitParser(pattern:'projects/**/Testing/main.xml', id: 'junit-test-results', name: 'unit-tests')]
+                            )
+                        }
+                    }
+                }
                 stage('Doxygen') {
                     steps {
                         script {

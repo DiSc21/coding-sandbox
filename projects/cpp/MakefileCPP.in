@@ -67,6 +67,9 @@ clang-tidy:
 	${cmd} "run-clang-tidy-14 -p build -header-filter=.* 2>&1 | tee -a build/clang_tidy_result; cd build; cat clang_tidy_result | sed 's/\x1B\[[0-9;]\{1,\}[A-Za-z]//g'"
 # 	| ../../../.docker/clang-tidy-to-junit.py /home/jarjar/Coding/DockerSandbox/projects/cpp/code_analysis/ > junit.xml"
 
+.PHONY: flawfinder
+flawfinder:
+	${cmd} "flawfinder --html --context ./src 2>&1 | tee -a build/flawfinder.html"
 
 #--------------------------------
 # clean targets for gcc and clang

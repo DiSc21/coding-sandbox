@@ -43,7 +43,8 @@ RUN apt-get install -y --no-install-recommends --fix-missing pkg-config libgtk-3
 RUN apt-get purge fcitx-module-dbus
 ENV PKG_CONFIG_PATH="/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/lib/x86_64-linux-gnu/gtkmm-3.0/include/:/usr/share/pkgconfig:${PKG_CONFIG_PATH}"
 
-RUN apt-get install -y --no-install-recommends --fix-missing cpplint
+RUN apt-get install -y --no-install-recommends --fix-missing cpplint flawfinder
+
 # # install glade
 # RUN apt-get install -y --no-install-recommends --fix-missing glade
 # 

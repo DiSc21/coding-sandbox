@@ -13,6 +13,15 @@ pipeline {
         def threshold_clang = 1
         def threshold_gcc = 1
     }
+    parameters {
+        choice(
+            name: 'something_to_choose_from',
+            choices: ['OptionA', 'OptionB', 'AndSoOn'],
+            description: 'some choices not sure what to choose yet'
+         )
+         string(name: 'test_dir', defaultValue: 'projects/cpp/code_analysis projects/cpp', description: 'List of directories to build')
+         booleanParam(name: 'build_only', defaultValue: false, description: 'Build only skip static code analysis?')
+    }
     stages {
         stage('Build Docker') {
             steps {
@@ -74,7 +83,7 @@ pipeline {
         }
         stage('Code Quality steps') {
             stages {
-                stage('Check GCC Log') {
+                stage('GCC') {
                     steps {
                         echo 'Collecting GCC Warnings ...'
                         recordIssues (
@@ -84,7 +93,7 @@ pipeline {
                         )
                     }
                 }
-                stage('Check Clang Log') {
+                stage('Clang') {
                     steps {
                         echo 'Collecting Clang Warnings ...'
                         recordIssues (
@@ -94,7 +103,7 @@ pipeline {
                         )
                     }
                 }
-                stage('Check Cmake') {
+                stage('Cmake') {
                     steps {
                         echo 'Collecting CMake Warnings ...'
                         recordIssues (
@@ -104,7 +113,7 @@ pipeline {
                         )
                     }
                 }
-                stage('Check Clang-Tidy') {
+                stage('Clang-Tidy') {
                     steps {
                         script {
                             echo 'Running Clang-Tidy ...'
@@ -120,7 +129,7 @@ pipeline {
                         )
                     }
                 }
-                stage('Check CppCheck') {
+                stage('CppCheck') {
                     steps {
                         script {
                             echo 'Running CppCheck ...'
@@ -136,7 +145,7 @@ pipeline {
                         }
                     }
                 }
-                stage('Check CppLint') {
+                stage('CppLint') {
                     steps {
                         script {
                             echo 'Running CppStyle ...'
@@ -156,7 +165,7 @@ pipeline {
                         }
                     }
                 }
-                stage('Check Doxygen') {
+                stage('Doxygen') {
                     steps {
                         script {
                             echo 'Collecting Doxygen Warnings ...'
@@ -177,7 +186,7 @@ pipeline {
                         }
                     }
                 }
-                stage('Check Code Coverage') {
+                stage('Coverage') {
                     steps {
                         script {
                             echo 'Running Gcovr ...'

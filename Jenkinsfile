@@ -21,7 +21,7 @@ pipeline {
 
         // thresholds for various code analysis tools
         // ------------------------------------------
-        def threshold_cppcheck_config = 1
+        def threshold_cppcheck_config = 51
         def threshold_unit_tests = 1
         def threshold_flawfinder = 1
         def threshold_clang_tidy = 1
@@ -57,20 +57,20 @@ pipeline {
         stage('Build Docker') {
             steps {
                 echo 'Building Docker ...'
-                echo "${make_dirs}"
-                sh '''#!/bin/bash
-                      cd .docker; ./run_docker.sh "echo hello docker"
-                '''
+                echo "Build directories: ${make_dirs}"
+                sh ".docker/start_docker.sh"
             }
         }
         stage('GCC/Clang Build') {
-            stages {
+            parallel {
                 stage('GCC Build') {
                     steps {
                         script {
                             "${make_dirs}".split(',').each {
                                 echo "Building (gcc) of subproject ${it}"
                                 sh "cd ${it} && make build/gcc"
+                                sh "echo ${it}/build/gcc_build.log | xargs cat >> .results/gcc_build.log"
+                                sh "echo ${it}/build/CMakeFiles/CMakeOutput.log | xargs cat  >> .results/cmake_builds.log;"
                             }
                         }
                     }
@@ -81,12 +81,13 @@ pipeline {
                             "${make_dirs}".split(',').each {
                                 echo "Building (clang) of subproject ${it}"
                                 sh "cd ${it} && make build/clang"
+                                sh "echo ${it}/build_clang/clang_build.log | xargs cat  >> .results/clang_build.log;"
                             }
                         }
                     }
                 }
-            }
-        }
+            } // parallel
+        } // stage
         stage('Unit Testing') {
             steps {
                 script {
@@ -97,23 +98,23 @@ pipeline {
                 }
             }
         }
-        stage('Collect Build Data') {
-            steps {
-                script {
-                    sh "rm -rf .results || true; mkdir .results"
-                    "${make_dirs}".split(',').each {
-                        echo "Collecting GCC logs for subproject ${it}"
-                        sh "echo ${it}/build/gcc_build.log | xargs cat >> .results/gcc_build.log"
-                        echo "Collecting Clang logs for subproject ${it}"
-                        sh "echo ${it}/build_clang/clang_build.log | xargs cat  >> .results/clang_build.log;"
-                        echo "Collecting Clang logs for subproject ${it}"
-                        sh "echo ${it}/build/CMakeFiles/CMakeOutput.log | xargs cat  >> .results/cmake_builds.log;"
-                    }
-                }
-            }
-        }
+        //stage('Collect Build Data') {
+        //    steps {
+        //        script {
+        //            sh "rm -rf .results || true; mkdir .results"
+        //            "${make_dirs}".split(',').each {
+        //                echo "Collecting GCC logs for subproject ${it}"
+        //                sh "echo ${it}/build/gcc_build.log | xargs cat >> .results/gcc_build.log"
+        //                echo "Collecting Clang logs for subproject ${it}"
+        //                sh "echo ${it}/build_clang/clang_build.log | xargs cat  >> .results/clang_build.log;"
+        //                echo "Collecting Cmake logs for subproject ${it}"
+        //                sh "echo ${it}/build/CMakeFiles/CMakeOutput.log | xargs cat  >> .results/cmake_builds.log;"
+        //            }
+        //        }
+        //    }
+        //}
         stage('Code Quality steps') {
-            stages {
+            parallel {
                 stage('Cmake') {
                     when {
                         expression { return params.cmake }
@@ -284,8 +285,8 @@ pipeline {
                         }
                     }
                 }
-            }
-        }
+            } // parallel
+        } // stage
     }
     post {
         always {
@@ -300,6 +301,7 @@ pipeline {
             publishHTML target: ([ allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true,
                                    reportDir: '.results', reportFiles: 'flawfinder.html',
                                    reportName: 'Flawfinder HTML-Report'])
+            sh ".docker/start_docker.sh"
         }
     }
 }

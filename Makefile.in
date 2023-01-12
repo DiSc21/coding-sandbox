@@ -1,9 +1,20 @@
+# note, ${base_dir} is defined in the Makefiles that include this Makefile.in
 cmd=${base_dir}/.docker/run_docker.sh
 
 .PHONY: build/docker
 build/docker:
 	${cmd} "echo Welcome to Docker dude!"
 
+.PHONY: start
+start:
+	${base_dir}/.docker/start_docker.sh
+
+.PHONY: stop
+stop:
+	${base_dir}/.docker/stop_docker.sh
+
+.PHONY: restart
+restart: stop start
 
 #--------------------------------
 # cleaningup and going into docker

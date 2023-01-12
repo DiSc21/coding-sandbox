@@ -1,6 +1,8 @@
 #!/bin/bash
 
 path=$(dirname "${BASH_SOURCE[0]}")
+# some safe word to check if a running container was started temporary
+safe_word="NotTmp"
 
 abs_root_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")/../"; pwd)
 run_cmd=${abs_root_dir}/.docker/run_docker.sh

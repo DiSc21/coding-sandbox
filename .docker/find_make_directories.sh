@@ -1,38 +1,35 @@
 #!/bin/bash
 
-abs_root_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")/../"; pwd)"/"
+source $(dirname "${BASH_SOURCE[0]}")/config.sh
 
 if [ $# -eq 0 ]; then
   echo "Pass at least one existing directory"
   echo "Exit!"
-  exit 128 
+  exit 128
 fi
 
 csv_dirs=""
-for dir in "$@"
+for input_dir in "$@"
 do
   # check param directory existance
-  if ! [ -d "$abs_root_dir$dir" ]; then
-    echo "No directory "$abs_root_dir$dir" found."
+  if ! [ -d "$abs_root_dir/$input_dir" ]; then
+    echo "No directory "$abs_root_dir"/"$input_dir" found."
     echo "Exit!"
     exit 128
   fi
 
   # find all subdirectories containing Makefile
-  cd $abs_root_dir$dir
+  cd $abs_root_dir"/"$input_dir
   make_dirs=$(find . -type f,l -name "Makefile" -exec dirname "{}" \; | sort -u)
- 
+
   for make_dir in $make_dirs
   do
-    check_dir=$abs_root_dir"/"$dir"/"$make_dir
+    check_dir=$(cd ${abs_root_dir}"/"${input_dir}"/"${make_dir}; pwd)
     dir_cmakelists=$check_dir"/CMakeLists.txt"
 
     # check if directory also contains CMakeLists.txt
     if [[ -f "$dir_cmakelists" ]]; then
-        cd $check_dir
-        check_dir=$('pwd')
-        csv_dirs=$csv_dirs${check_dir#"$abs_root_dir"}","
-        cd $abs_root_dir"/"$dir
+        csv_dirs=$csv_dirs${check_dir#"$abs_root_dir/"}","
     fi
   done
   cd $abs_root_dir

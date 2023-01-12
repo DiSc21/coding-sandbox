@@ -4,13 +4,14 @@
 //        |  | |     _       |    |    ,_   | |     |__/   _  _       __, | |   _|_        |
 //      _ |  |/ \   |/      _|    ||  /  |  |/_)    | \   / |/ |  |  /  | |/ \   |         |
 //     (_/   |   |_/|__/   (/\___/ |_/   |_/| \_/   |  \_/  |  |_/|_/\_/|/|   |_/|_/       |
-//                                                                     /|                  |
+//    *****************************************************************/|***********       |
 //                                                                     \|                  |
 //_________________________________________________________________________________________|
 //                                                                                         |
-// Copyright 2023 DiSc21-Fantasies-21 @ TDK. All rights reserved.                          |
+// Copyright 2023 DiSc21-Fantasies @ TDK. All rights reserved.                             |
 // None of the code is licensed under any License.                                         |
 //_________________________________________________________________________________________|
+
 
 /* Requires the Docker Pipeline plugin */
 pipeline {
@@ -21,6 +22,7 @@ pipeline {
 
         // thresholds for various code analysis tools
         // ------------------------------------------
+        def threshold_cppcheck_config = 51
         def threshold_unit_tests = 1
         def threshold_flawfinder = 1
         def threshold_clang_tidy = 1
@@ -32,12 +34,11 @@ pipeline {
         def threshold_gcc = 1
     }
     parameters {
-        choice(
-            name: 'something_to_choose_from',
-            choices: ['OptionA', 'OptionB', 'AndSoOn'],
-            description: 'some choices not sure what to choose yet'
-        )
-
+        //choice(
+        //    name: 'something_to_choose_from',
+        //    choices: ['OptionA', 'OptionB', 'AndSoOn'],
+        //    description: 'some choices not sure what to choose yet'
+        //)
         //string(name: 'test_dir', defaultValue: 'projects/cpp', description: 'Root directory for projects to build and test')
 
         // boolean various code analysis stages
@@ -56,20 +57,20 @@ pipeline {
         stage('Build Docker') {
             steps {
                 echo 'Building Docker ...'
-                echo "${make_dirs}"
-                sh '''#!/bin/bash
-                      cd .docker; ./run_docker.sh "echo hello docker"
-                '''
+                echo "Build directories: ${make_dirs}"
+                sh ".docker/start_docker.sh"
             }
         }
         stage('GCC/Clang Build') {
-            stages {
+            parallel {
                 stage('GCC Build') {
                     steps {
                         script {
                             "${make_dirs}".split(',').each {
                                 echo "Building (gcc) of subproject ${it}"
                                 sh "cd ${it} && make build/gcc"
+                                sh "echo ${it}/build/gcc_build.log | xargs cat >> .results/gcc_build.log"
+                                sh "echo ${it}/build/CMakeFiles/CMakeOutput.log | xargs cat  >> .results/cmake_builds.log;"
                             }
                         }
                     }
@@ -80,12 +81,13 @@ pipeline {
                             "${make_dirs}".split(',').each {
                                 echo "Building (clang) of subproject ${it}"
                                 sh "cd ${it} && make build/clang"
+                                sh "echo ${it}/build_clang/clang_build.log | xargs cat  >> .results/clang_build.log;"
                             }
                         }
                     }
                 }
-            }
-        }
+            } // parallel
+        } // stage
         stage('Unit Testing') {
             steps {
                 script {
@@ -96,23 +98,8 @@ pipeline {
                 }
             }
         }
-        stage('Collect Build Data') {
-            steps {
-                script {
-                    sh "rm -rf .results || true; mkdir .results"
-                    "${make_dirs}".split(',').each {
-                        echo "Collecting GCC logs for subproject ${it}"
-                        sh "echo ${it}/build/gcc_build.log | xargs cat >> .results/gcc_build.log"
-                        echo "Collecting Clang logs for subproject ${it}"
-                        sh "echo ${it}/build_clang/clang_build.log | xargs cat  >> .results/clang_build.log;"
-                        echo "Collecting Clang logs for subproject ${it}"
-                        sh "echo ${it}/build/CMakeFiles/CMakeOutput.log | xargs cat  >> .results/cmake_builds.log;"
-                    }
-                }
-            }
-        }
-        stage('Code Quality steps') {
-            stages {
+        stage('C++ Code Analysis') {
+            parallel {
                 stage('Cmake') {
                     when {
                         expression { return params.cmake }
@@ -184,14 +171,14 @@ pipeline {
                                   cp projects/.results/cppcheck_config.xml .results/cppcheck_config.xml
                             '''
                             recordIssues (
-                                qualityGates: [[threshold: threshold_cppcheck, type: 'TOTAL', unstable: true]],
+                                qualityGates: [[threshold: threshold_cppcheck_config, type: 'TOTAL', unstable: true]],
                                 sourceCodeEncoding: 'ISO-8859-1', enabledForFailure: true, aggregatingResults: true,
-                                tools: [cppCheck(pattern:'**.results/cppcheck.xml')]
+                                tools: [cppCheck(pattern:'**.results/cppcheck_config.xml', id: 'cppcheck-config', name: 'CppCheck Config')]
                             )
                             recordIssues (
                                 qualityGates: [[threshold: threshold_cppcheck, type: 'TOTAL', unstable: true]],
                                 sourceCodeEncoding: 'ISO-8859-1', enabledForFailure: true, aggregatingResults: true,
-                                tools: [cppCheck(pattern:'**.results/cppcheck_config.xml', id: 'cppcheck-config', name: 'CppCheck Config')]
+                                tools: [cppCheck(pattern:'**.results/cppcheck.xml')]
                             )
                         }
                     }
@@ -283,22 +270,23 @@ pipeline {
                         }
                     }
                 }
-            }
-        }
-    }
+            } // parallel
+        } // stage
+    } // stages
     post {
         always {
             echo 'Perfoming post build/check steps'
             publishCoverage adapters: [cobertura('**.results/gcovr_coverage.xml')]
             publishHTML target: ([ allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true,
                                    reportDir: '.results', reportFiles: 'gcovr_coverage.html',
-                                   reportName: 'Gcovr Coverage html-Report'])
+                                   reportName: 'Gcovr Coverage HTML-Report'])
             publishHTML target: ([ allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true,
                                    reportDir: 'doxygen/html', reportFiles: 'index.html',
                                    reportName: 'Doxygen HTML-Report'])
             publishHTML target: ([ allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true,
                                    reportDir: '.results', reportFiles: 'flawfinder.html',
                                    reportName: 'Flawfinder HTML-Report'])
+            sh ".docker/start_docker.sh"
         }
     }
 }

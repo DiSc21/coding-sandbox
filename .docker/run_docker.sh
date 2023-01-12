@@ -1,9 +1,6 @@
 #!/bin/bash
 
-# base directory needs to be mounted at same location as on host for dod (docker out of docker)
-abs_base_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")/../"; pwd)
-
-source $(dirname "${BASH_SOURCE[0]}")/include.sh
+source $(dirname "${BASH_SOURCE[0]}")/build_docker.sh
 
 docker run -i --rm --name ${name} \
     --volume="$HOME/.Xauthority:/root/.Xauthority:rw" \
@@ -13,7 +10,7 @@ docker run -i --rm --name ${name} \
     --user $(id -u) \
     --net=host \
     --env="DISPLAY" \
-    -v $abs_base_dir:$abs_base_dir \
+    -v $abs_root_dir:$abs_root_dir \
     -w $(pwd) \
-    $dockername /bin/bash -c "$@"
+    $dockername /bin/bash -c "touch /ws/docker_started; $@"
 

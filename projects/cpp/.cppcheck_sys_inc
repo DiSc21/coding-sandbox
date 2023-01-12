@@ -1,0 +1,7 @@
+/usr/local/include/gtest/
+/usr/local/include/gmock/
+/usr/local/include/gtest/internal/
+/usr/local/include/gmock/internal/
+/usr/local/include/gmock/internal/custom/
+/usr/local/include/gtest/internal/custom/
+/usr/include/c++/11/

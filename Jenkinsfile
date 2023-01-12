@@ -21,6 +21,7 @@ pipeline {
 
         // thresholds for various code analysis tools
         // ------------------------------------------
+        def threshold_cppcheck_config = 1
         def threshold_unit_tests = 1
         def threshold_flawfinder = 1
         def threshold_clang_tidy = 1
@@ -184,14 +185,14 @@ pipeline {
                                   cp projects/.results/cppcheck_config.xml .results/cppcheck_config.xml
                             '''
                             recordIssues (
-                                qualityGates: [[threshold: threshold_cppcheck, type: 'TOTAL', unstable: true]],
+                                qualityGates: [[threshold: threshold_cppcheck_config, type: 'TOTAL', unstable: true]],
                                 sourceCodeEncoding: 'ISO-8859-1', enabledForFailure: true, aggregatingResults: true,
-                                tools: [cppCheck(pattern:'**.results/cppcheck.xml')]
+                                tools: [cppCheck(pattern:'**.results/cppcheck_config.xml', id: 'cppcheck-config', name: 'CppCheck Config')]
                             )
                             recordIssues (
                                 qualityGates: [[threshold: threshold_cppcheck, type: 'TOTAL', unstable: true]],
                                 sourceCodeEncoding: 'ISO-8859-1', enabledForFailure: true, aggregatingResults: true,
-                                tools: [cppCheck(pattern:'**.results/cppcheck_config.xml', id: 'cppcheck-config', name: 'CppCheck Config')]
+                                tools: [cppCheck(pattern:'**.results/cppcheck.xml')]
                             )
                         }
                     }

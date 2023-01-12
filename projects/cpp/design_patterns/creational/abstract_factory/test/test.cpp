@@ -47,7 +47,7 @@ TEST(LinuxWidgetClient, display_window) // NOLINT
     uint8_t btn_num{0};
     uint8_t menu_num{0};
 
-    for (const auto &data : data_vec)
+    for ( const auto &data : data_vec )
     {
         EXPECT_LINUX(data);
         (data.w_type == WidgetType::BUTTON) ? btn_num++ : menu_num++;
@@ -94,7 +94,7 @@ TEST(WindowsWidgetClient, display_window) // NOLINT
     uint8_t btn_num{0};
     uint8_t menu_num{0};
 
-    for (const auto &data : data_vec)
+    for ( const auto &data : data_vec )
     {
         EXPECT_WINDOWS(data);
         (data.w_type == WidgetType::BUTTON) ? btn_num++ : menu_num++;

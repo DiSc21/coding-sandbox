@@ -3,10 +3,12 @@
 
 #include "../src/DS_FactoryMethod.hpp"
 
-
+/// @brief simple aux class for testing
 class TestFacMeth // NOLINT
 {
   public:
+    /// @brief simple aux function for creation of Objects
+    /// @return vector of shared_ptrs of created objects
     static auto createObjects() -> std::vector<std::shared_ptr<ObjectBase_>>
     {
         std::vector<std::shared_ptr<ObjectBase_>> objects;
@@ -50,7 +52,7 @@ TEST(ObjectBase_, doWhatNeedsToBeDone) // NOLINT
 
     std::set<uint16_t> valid_nums{1, 2};
 
-    for (const auto &obj_ptr : objects)
+    for ( const auto &obj_ptr : objects )
     {
         const auto num = obj_ptr->doWhatNeedsToBeDone();
         EXPECT_TRUE(valid_nums.find(num) != valid_nums.end());
@@ -76,7 +78,7 @@ TEST(ObjectHandler, processReturnHorsts) // NOLINT
 
     uint8_t num_enabled  = 0;
     uint8_t num_disabled = 0;
-    for (const auto &is_used : vec)
+    for ( const auto &is_used : vec )
     {
         (is_used) ? ++num_enabled : ++num_disabled;
     }

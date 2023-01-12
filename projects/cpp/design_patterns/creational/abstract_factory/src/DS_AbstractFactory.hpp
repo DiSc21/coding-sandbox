@@ -1,9 +1,24 @@
-//----------------------------------------------------------------------------------------------------
-//- ABSTRACT FACTORY ---------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------------------------
-// The abstract factory pattern is useful when client doesn’t know exactly what type to create.
+//*****************************************************************************************|
+//     ______ _              ____            _      ,                      _               |
+//    (_) |  | |            (|   \ o        | |    /|   /         o       | |              |
+//        |  | |     _       |    |    ,_   | |     |__/   _  _       __, | |   _|_        |
+//      _ |  |/ \   |/      _|    ||  /  |  |/_)    | \   / |/ |  |  /  | |/ \   |         |
+//     (_/   |   |_/|__/   (/\___/ |_/   |_/| \_/   |  \_/  |  |_/|_/\_/|/|   |_/|_/       |
+//    *****************************************************************/|***********       |
+//                                                                     \|                  |
+//_________________________________________________________________________________________|
+//                                                                                         |
+// Copyright (c) 2023  DiSc21-Fantasies@TDK. All rights reserved.                          |
+// None of the code is licensed under any License.                                         |
+//_________________________________________________________________________________________|
 //
-//----------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------
+//- ABSTRACT FACTORY -----------------------------------------------------------------------
+//------------------------------------------------------------------------------------------
+// The abstract factory pattern is useful when client doesn’t know exactly what type
+// to create.kj
+//
+//------------------------------------------------------------------------------------------
 //
 // COMPONENTS:
 // -----------
@@ -14,57 +29,64 @@
 // - ABSTRACT FACTORY:
 //   Declares an interface for operations that create abstract product objects.
 // - CONCRETE FACTORY:
-//   Implements the operations declared in the Abstract Factory to create concrete product objects.
+//   Implements the operations declared in the Abstract Factory to create concrete objects.
 // - CLIENT:
 //   Uses only interfaces declared by Abstract Factory and Abstract Product classes.
 //
-//----------------------------------------------------------------------------------------------------
-// The abstract factory pattern is useful when client doesn’t know exactly what type to create.
+//------------------------------------------------------------------------------------------
+// Abstract factory pattern is useful when client doesn’t know exactly what type to create.
 // ADVANTAGES:
 // -----------
 // - ISOLATION of concrete classes:
-//   The Abstract Factory pattern helps to control classes of objects that an application creates.
+//   Abstract Factory pattern helps to control classes of objects created by an application.
 //
 // - FAST and EASY EXCHANGING of Product Families:
-//   The class of concrete factories appear only once in an application, i.e. where instantiated.
+//   Class of concrete factories appear only once in an application where instantiated.
 //   This makes it easy to change the concrete factory an application uses.
 //
 // - Enforcing CONSISTENCY among PRODUCTS:
-//   When product objects in a family are designed to work together, it’s important that applications
-//   use only objects from a single family at a time. AbstractFactory makes this easy to enforce.
+//   When product objects in a family are designed to work together, it’s important that
+//   applications use only objects from a single family at a time.
+//   AbstractFactory makes this easy to enforce.
 //
-//----------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------
 //
 // DISADVANTAGES:
 // --------------
 // - DIFFICULT to SUPPORT NEW KIND OF PRODUCTS:
 //   Since the Abstract Factory interface fixes the set of products that can be created,
-//   it's not straight-forward to extend abstract factories to produce new kinds of products.
+//   it's not straight-forward to extend abstract factories to produce new kind of products.
 //
-//----------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------
 
 #ifndef DS_ABSTRACT_FACTORY_HPP
 #define DS_ABSTRACT_FACTORY_HPP
 
 #include <iostream>
 #include <memory>
+#include <utility>
 #include <vector>
 
+/// @brief Enum for different types of widgets
 enum class WidgetType : uint8_t
 {
     BUTTON,
     MENU
 };
 
+/// @brief Enum for different types of platforms
 enum class PlatformType : uint8_t
 {
     LINUX,
     WINDOWS
 };
 
+/// @brief Struct with Widget/Platform enum members
 struct PlatformWidget
 {
+    /// @brief the platform type
     PlatformType p_type;
+    /// @brief the widget type
     WidgetType   w_type;
 };
 
@@ -73,16 +95,20 @@ struct PlatformWidget
 class Widget_
 {
   public:
+    /// @brief pure virtual draw method
+    /// @return PlatformWidget struct for testing
     [[nodiscard]] virtual auto draw() const -> PlatformWidget = 0;
 
-    Widget_()                     = default;
-    Widget_(const Widget_ &other) = default;
-    Widget_(Widget_ &&other)      = default;
+    Widget_()                             = default; ///> default-constructor
+    Widget_(const Widget_ & /*> other */) = default; ///> copy-constructor
+    Widget_(Widget_ && /*> other */)      = default; ///> move-constructor
 
-    auto operator=(const Widget_ & /*other*/) -> Widget_ & = default;
-    auto operator=(Widget_ && /*other*/) noexcept -> Widget_ & { return *this; }
+    /// @return Widget_
+    auto operator=(const Widget_ & /*> other*/) -> Widget_ & = default; ///> =ops
+    /// @return Widget_
+    auto operator=(Widget_ && /*> other*/) noexcept -> Widget_ & { return *this; } ///> =ops
 
-    virtual ~Widget_() = default;
+    virtual ~Widget_() = default; ///> destructor
 };
 
 
@@ -90,12 +116,16 @@ class Widget_
 class LinuxButton : public Widget_
 {
   public:
+    /// @brief concrete draw method
+    /// @return PlatformWidget struct for testing
     [[nodiscard]] auto draw() const -> PlatformWidget final { return PlatformWidget({PlatformType::LINUX, WidgetType::BUTTON}); }
 };
 /// @brief Concrete LINUX product MENU
 class LinuxMenu : public Widget_
 {
   public:
+    /// @brief concrete draw method
+    /// @return PlatformWidget struct for testing
     [[nodiscard]] auto draw() const -> PlatformWidget final { return PlatformWidget({PlatformType::LINUX, WidgetType::MENU}); }
 };
 
@@ -104,6 +134,8 @@ class LinuxMenu : public Widget_
 class WindowsButton : public Widget_
 {
   public:
+    /// @brief concrete draw method
+    /// @return PlatformWidget struct for testing
     [[nodiscard]] auto draw() const -> PlatformWidget final
     {
         return PlatformWidget({PlatformType::WINDOWS, WidgetType::BUTTON});
@@ -113,6 +145,8 @@ class WindowsButton : public Widget_
 class WindowsMenu : public Widget_
 {
   public:
+    /// @brief concrete draw method
+    /// @return PlatformWidget struct for testing
     [[nodiscard]] auto draw() const -> PlatformWidget final { return PlatformWidget({PlatformType::WINDOWS, WidgetType::MENU}); }
 };
 
@@ -121,30 +155,51 @@ class WindowsMenu : public Widget_
 class Factory_
 {
   public:
+    /// @brief pure virtual creation method for button
+    /// @return shared pointer on freshly created widget
+    /// @note using template<Widget> and only having single create_widget method would be nicer
     [[nodiscard]] virtual auto create_button() const -> std::shared_ptr<Widget_> = 0;
+    /// @brief pure virtual creation method for menu
+    /// @return shared pointer on freshly created widget
+    /// @note using template<Widget> and only having single create_widget method would be nicer
     [[nodiscard]] virtual auto create_menu() const -> std::shared_ptr<Widget_>   = 0;
 
-    Factory_()                      = default;
-    Factory_(const Factory_ &other) = default;
-    Factory_(Factory_ &&other)      = default;
+    Factory_()                             = default; ///> default-constructor
+    Factory_(const Factory_ & /*> other*/) = default; ///> copy-constructor
+    Factory_(Factory_ && /*> other*/)      = default; ///> move-constructor
 
-    auto operator=(const Factory_ & /*other*/) -> Factory_ & = default;
-    auto operator=(Factory_ && /*other*/) noexcept -> Factory_ & { return *this; }
 
-    virtual ~Factory_() = default;
+    /// @return Factory
+    auto operator=(const Factory_ & /*> other*/) -> Factory_ & = default; ///> =ops
+    /// @return Factory
+    auto operator=(Factory_ && /*> other*/) noexcept -> Factory_ & { return *this; } ///> =ops
+
+    virtual ~Factory_() = default; ///> destructor
 };
 /// @brief a CONCRETE FACTORY corresponding to LINUX product family
 class LinuxFactory : public Factory_
 {
   public:
+    /// @brief concrete creation method for button
+    /// @return shared pointer on freshly created widget
+    /// @note using template<Widget> and only having single create_widget method would be nicer
     [[nodiscard]] auto create_button() const -> std::shared_ptr<Widget_> final { return std::make_shared<LinuxButton>(); }
+    /// @brief concrete creation method for menu
+    /// @return shared pointer on freshly created widget
+    /// @note using template<Widget> and only having single create_widget method would be nicer
     [[nodiscard]] auto create_menu() const -> std::shared_ptr<Widget_> final { return std::make_shared<LinuxMenu>(); }
 };
 /// @brief a CONCRETE FACTORY corresponding to LINUX product family
 class WindowsFactory : public Factory_
 {
   public:
+    /// @brief concrete creation method for button
+    /// @return shared pointer on freshly created widget
+    /// @note using template<Widget> and only having single create_widget method would be nicer
     [[nodiscard]] auto create_button() const -> std::shared_ptr<Widget_> final { return std::make_shared<WindowsButton>(); }
+    /// @brief concrete creation method for menu
+    /// @return shared pointer on freshly created widget
+    /// @note using template<Widget> and only having single create_widget method would be nicer
     [[nodiscard]] auto create_menu() const -> std::shared_ptr<Widget_> final { return std::make_shared<WindowsMenu>(); }
 };
 
@@ -160,14 +215,20 @@ class WindowsFactory : public Factory_
 class WidgetClient
 {
   public:
+    WidgetClient() = delete;
+
+    /// @brief Parameterized constructor
+    /// @param factory shared pointer on the concrete (Windows or Linux) factory for client to use
     explicit WidgetClient(const std::shared_ptr<Factory_> &factory) : factory_(factory) {}
 
+    /// @brief function to display window, i.e. in this case just returning a vector of Widgets
+    /// @return vector of platfomrWidget structs
     [[nodiscard]] auto display_window() -> std::vector<PlatformWidget>
     {
         std::vector<std::shared_ptr<Widget_>> widgets = {factory_->create_button(), factory_->create_menu()};
 
         std::vector<PlatformWidget> concrete_widgets{};
-        for (const auto &widget : widgets)
+        for ( const auto &widget : widgets )
         {
             static_cast<void>(concrete_widgets.emplace_back(widget->draw()));
         }
@@ -176,6 +237,7 @@ class WidgetClient
     }
 
   private:
+    // @brief const ref on factory daughtor, i.e. Windows or Linux factory
     const std::shared_ptr<Factory_> &factory_;
 };
 

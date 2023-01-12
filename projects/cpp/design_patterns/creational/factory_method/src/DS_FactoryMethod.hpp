@@ -1,3 +1,17 @@
+//*****************************************************************************************|
+//     ______ _              ____            _      ,                      _               |
+//    (_) |  | |            (|   \ o        | |    /|   /         o       | |              |
+//        |  | |     _       |    |    ,_   | |     |__/   _  _       __, | |   _|_        |
+//      _ |  |/ \   |/      _|    ||  /  |  |/_)    | \   / |/ |  |  /  | |/ \   |         |
+//     (_/   |   |_/|__/   (/\___/ |_/   |_/| \_/   |  \_/  |  |_/|_/\_/|/|   |_/|_/       |
+//    *****************************************************************/|***********       |
+//                                                                     \|                  |
+//_________________________________________________________________________________________|
+//                                                                                         |
+// Copyright (c) 2023  DiSc21-Fantasies@TDK. All rights reserved.                          |
+// None of the code is licensed under any License.                                         |
+//_________________________________________________________________________________________|
+
 #ifndef DS_FACTORY_METHOD_HPP
 #define DS_FACTORY_METHOD_HPP
 
@@ -5,26 +19,32 @@
 #include <memory>
 #include <vector>
 
+/// @brief pure virtual basis class
 class ObjectBase_
 {
   public:
-    ObjectBase_()                         = default;
-    ObjectBase_(const ObjectBase_ &other) = default;
-    ObjectBase_(ObjectBase_ &&other)      = default;
+    ObjectBase_()                                = default; ///> default-constructor
+    ObjectBase_(const ObjectBase_ & /*> other*/) = default; ///> copy-constructor
+    ObjectBase_(ObjectBase_ && /*> other*/)      = default; ///> move-constructor
 
-    auto operator=(const ObjectBase_ & /*other*/) -> ObjectBase_ & = default;
+    /// @return ObjectBase_
+    auto operator=(const ObjectBase_ & /*> other*/) -> ObjectBase_ & = default; ///> =ops
+    /// @return ObjectBase_
+    /// @param other the rhs object
     auto operator=(ObjectBase_ &&other) noexcept -> ObjectBase_ &
     {
         is_used_ = other.is_used_;
         return *this;
-    }
-    virtual ~ObjectBase_() = default;
+    } ///> =ops
+
+    virtual ~ObjectBase_() = default; ///> destructor
 
     /// @brief getter for is_used_ member
     /// @return private member is_used_
     [[nodiscard]] auto isUsed() const -> bool { return is_used_; }
 
     /// @brief just some pure virtual test function
+    /// @return currenty nothind, later just an integer for test purposes
     [[nodiscard]] virtual auto doWhatNeedsToBeDone() const -> uint16_t = 0;
 
     /// @brief simple test function for forEach-lambda return by reference
@@ -41,22 +61,29 @@ class ObjectBase_
     bool is_used_{true};
 };
 
+/// @brief concrete ObjectOne
 class ObjectOne : public ObjectBase_
 {
   public:
-    ObjectOne() { disable(); }
+    ObjectOne() { disable(); } ///> a constructor, ... why makes me doxygen do that?
 
+    /// @brief concrete test function
+    /// @return an integer for test purposes
     [[nodiscard]] auto doWhatNeedsToBeDone() const -> uint16_t override { return 1; }
 };
 
+/// @brief concrete ObjectTwo
 class ObjectTwo : public ObjectBase_
 {
   public:
-    ObjectTwo() { enable(); }
+    ObjectTwo() { enable(); } ///> a constructor, ... why makes me doxygen do that?
+
+    /// @brief concrete test function
+    /// @return an integer for test purposes
     [[nodiscard]] auto doWhatNeedsToBeDone() const -> uint16_t override { return 2; }
 };
 
-
+/// @brief ObjectHandler
 class ObjectHandler
 {
   public:
@@ -68,6 +95,7 @@ class ObjectHandler
     }
 
     /// @brief templated factory method creating shared pointer
+    /// @return shared ptr on create Object
     template <typename T> [[nodiscard]] static auto createObject() -> std::shared_ptr<ObjectBase_>
     {
         return std::make_shared<T>();
@@ -97,7 +125,7 @@ class ObjectHandler
     /// @param target data to be returned by reference
     template <typename Lambda, typename Target> void forEach(Lambda lambda, Target &target)
     {
-        for (auto &obj : objects_)
+        for ( auto &obj : objects_ )
         {
             (obj->isUsed()) ? lambda(obj, target) : void();
         }

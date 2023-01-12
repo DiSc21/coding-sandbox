@@ -14,7 +14,7 @@ build/main:
 
 .PHONY: test
 test:
-	${cmd} "cmake --build build -t test ARGS=-V"
+	${cmd} " mkdir -p build/Testing; export GTEST_OUTPUT="xml:Testing/"; cmake --build build -t test ARGS=-V"
 
 .PHONY: build/test
 build/test: build/main test coverage
@@ -54,19 +54,23 @@ coverage-html:
 coverage-cobertura:
 	${cmd} "cd build; gcovr -r ../ . --exclude-throw-branches --exclude-unreachable-branches --xml -o example_cobertura_summary.xml"
 
-.PHONY: cpp-check
-cpp-check:
+.PHONY: cppcheck
+cppcheck:
 	${cmd} "cppcheck --force --verbose --check-config --enable=all --xml --xml-version=2 ./src/ 2> build/cppcheck.xml"
 
 .PHONY: cpplint
 cpplint:
-	${cmd} "cpplint --quiet --counting=detailed --filter=-whitespace/indent,-whitespace/braces,-build/header_guard --linelength=130 --output=eclipse --recursive ./src/ 2> build/cpplint.log || true"
+	${cmd} "cpplint --quiet --counting=detailed --filter=-whitespace/indent,-whitespace/braces,-whitespace/comments,-whitespace/blank_line,-build/header_guard,-legal/copyright,-runtime/references --linelength=140 --output=eclipse --recursive ./src/ 2> build/cpplint.log || true"
 
 .PHONY: clang-tidy
 clang-tidy:
 	${cmd} "run-clang-tidy-14 -p build -header-filter=.* 2>&1 | tee -a build/clang_tidy_result; cd build; cat clang_tidy_result | sed 's/\x1B\[[0-9;]\{1,\}[A-Za-z]//g'"
 # 	| ../../../.docker/clang-tidy-to-junit.py /home/jarjar/Coding/DockerSandbox/projects/cpp/code_analysis/ > junit.xml"
 
+.PHONY: flawfinder
+flawfinder:
+	${cmd} "flawfinder --html --context ./src 2>&1 | tee -a build/flawfinder.html"
+	${cmd} "flawfinder --context ./src 2>&1 | tee -a build/flawfinder.log"
 
 #--------------------------------
 # clean targets for gcc and clang

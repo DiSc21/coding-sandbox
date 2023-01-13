@@ -16,9 +16,9 @@ then
         -w $(pwd) \
         $dockername /bin/bash -c "$@"
 else
-    if [[ $(docker exec -it ${name} /bin/bash -c "test -e /tmp/docker_started && echo ${safe_word}") == ${safe_word}* ]]
+    if [[ $(docker exec -i ${name} /bin/bash -c "test -e /tmp/docker_started && echo ${safe_word}") == ${safe_word}* ]]
     then
-        docker exec -it ${name} /bin/bash -c "$@"
+      docker exec -i ${name} /bin/bash -c "cd $(pwd); $@"
     else
         echo "[INFO] Docker is currently in a temporary state of existance."
         echo "[INFO] Probably some make command started it for some task."

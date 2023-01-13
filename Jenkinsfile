@@ -214,8 +214,8 @@ pipeline {
                             sh '''#!/bin/bash
                                   tmp_dirs=${make_dirs}","
                                   src_dirs=$(echo ${tmp_dirs//,//src })
-                                  .docker/run_docker.sh "flawfinder --context ${src_dirs} >> .results/flawfinder.log"
-                                  .docker/run_docker.sh "flawfinder --html --context ${src_dirs} >> .results/flawfinder.html"
+                                  .docker/run_docker.sh "flawfinder --context --singleline ${src_dirs} >> .results/flawfinder.log"
+                                  .docker/run_docker.sh "flawfinder --html --context --singleline ${src_dirs} >> .results/flawfinder.html"
                             '''
                             recordIssues (
                                 qualityGates: [[threshold: threshold_flawfinder, type: 'TOTAL', unstable: true]],

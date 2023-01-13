@@ -69,8 +69,8 @@ clang-tidy:
 
 .PHONY: flawfinder
 flawfinder:
-	${cmd} "flawfinder --html --context ./src 2>&1 | tee -a build/flawfinder.html"
-	${cmd} "flawfinder --context ./src 2>&1 | tee -a build/flawfinder.log"
+	${cmd} "flawfinder --html --context --singleline ./src 2>&1 | tee -a build/flawfinder.html"
+	${cmd} "flawfinder --context --singleline ./src 2>&1 | tee -a build/flawfinder.log"
 
 #--------------------------------
 # clean targets for gcc and clang

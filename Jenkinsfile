@@ -17,11 +17,10 @@
 pipeline {
     agent any
     environment {
-        def make_dirs_roots = "projects/cpp/code_analysis projects/cpp/design_patterns"
-        def make_dirs = sh(script: ".docker/find_make_directories.sh ${make_dirs_roots}", returnStdout: true).trim()
-
         // thresholds for various code analysis tools
         // ------------------------------------------
+        def threshold_coverage_branch_perc = 90
+        def threshold_coverage_line_perc = 66
         def threshold_cppcheck_config = 51
         def threshold_unit_tests = 1
         def threshold_flawfinder = 1
@@ -34,12 +33,13 @@ pipeline {
         def threshold_gcc = 1
     }
     parameters {
-        //choice(
-        //    name: 'something_to_choose_from',
-        //    choices: ['OptionA', 'OptionB', 'AndSoOn'],
-        //    description: 'some choices not sure what to choose yet'
-        //)
-        //string(name: 'test_dir', defaultValue: 'projects/cpp', description: 'Root directory for projects to build and test')
+        // Select build type via Jenkins coices
+        // ------------------------------------
+        choice(
+            name: 'build_type',
+            choices: ['ReleaseBuild', 'TestCodeAnalysis'],
+            description: 'Defines type of build. Choose \'ReleaseBuild\' to test code changes and \'TestCodeAnalysis\' to check tools.'
+        )
 
         // boolean various code analysis stages
         // ------------------------------------
@@ -56,11 +56,29 @@ pipeline {
     stages {
         stage('Build Docker') {
             steps {
-                echo 'Building Docker ...'
-                sh ".docker/start_docker.sh"
-                echo 'Make results directory ...'
-                sh "rm -rf .results || true; mkdir .results"
-                echo "Build directories: ${make_dirs}"
+                script {
+                    echo 'Building Docker ...'
+                    sh ".docker/start_docker.sh"
+                    echo 'Make results directory ...'
+                    sh "rm -rf .results || true; mkdir .results"
+                    if(params.build_type == 'TestCodeAnalysis') {
+                        def make_dirs_roots = 'projects/cpp/test_cpp_code_analysis'
+                        env.make_dirs_roots = make_dirs_roots
+                        def make_dirs = sh(script: ".docker/find_make_directories.sh ${make_dirs_roots}", returnStdout: true).trim()
+                        env.make_dirs = make_dirs
+
+                    }
+                    else {
+                        def make_dirs_roots = 'projects/cpp/design_patterns'
+                        env.make_dirs_roots = make_dirs_roots
+                        def make_dirs = sh(script: ".docker/find_make_directories.sh ${make_dirs_roots}", returnStdout: true).trim()
+                        env.make_dirs = make_dirs
+                    }
+                    echo "Build directories: ${make_dirs}"
+                    "${make_dirs}".split(',').each {
+                        sh "cd ${it} && make clean"
+                    }
+                }
             }
         }
         stage('GCC/Clang Build') {
@@ -95,7 +113,7 @@ pipeline {
                 script {
                     "${make_dirs}".split(',').each {
                         echo "Unit testing of subproject ${it}"
-                        sh "cd ${it} && make test"
+                        sh "cd ${it} && make test || echo \"No stage fail\""
                     }
                 }
             }
@@ -167,7 +185,9 @@ pipeline {
                     steps {
                         script {
                             echo 'Running CppCheck ...'
+                            echo "${make_dirs_roots}"
                             sh '''#!/bin/bash
+                                  echo "${make_dirs_roots}"
                                   .docker/run_cppcheck_on_subprojects.sh ${make_dirs_roots}
                                   cp projects/.results/cppcheck.xml .results/cppcheck.xml
                                   cp projects/.results/cppcheck_config.xml .results/cppcheck_config.xml
@@ -211,8 +231,10 @@ pipeline {
                     steps {
                         script {
                             echo 'Collecting Flawfinder Warnings ...'
+                            echo "${make_dirs}"
                             sh '''#!/bin/bash
-                                  tmp_dirs=${make_dirs}","
+                                  echo "${make_dirs}"
+                                  tmp_dirs=${make_dirs},
                                   src_dirs=$(echo ${tmp_dirs//,//src })
                                   .docker/run_docker.sh "flawfinder --context --singleline ${src_dirs} >> .results/flawfinder.log"
                                   .docker/run_docker.sh "flawfinder --html --context --singleline ${src_dirs} >> .results/flawfinder.html"
@@ -252,7 +274,7 @@ pipeline {
                             recordIssues (
                                 qualityGates: [[threshold: threshold_unit_tests, type: 'TOTAL', unstable: true]],
                                 sourceCodeEncoding: 'ISO-8859-1', enabledForFailure: true, aggregatingResults: true,
-                                tools: [junitParser(pattern:'projects/**/Testing/main.xml', id: 'test-results', name: 'Unit-Test')]
+                                tools: [junitParser(pattern:"${make_dirs_roots}/**/Testing/main.xml", id: 'test-results', name: 'Unit-Test')]
                             )
                         }
                     }
@@ -265,10 +287,45 @@ pipeline {
                         script {
                             echo 'Running Gcovr ...'
                             sh '''#!/bin/bash
-                                  .docker/run_gcovr_on_subprojects.sh ${make_dirs_roots}
-                                  cp projects/.results/gcovr_coverage.xml .results/gcovr_coverage.xml
+                                  .docker/run_gcovr_on_subprojects.sh "${make_dirs_roots}"
                                   cp projects/.results/gcovr_*.html .results/
+                                  cp projects/.results/gcovr_coverage.xml .results/gcovr_coverage.xml
                             '''
+                            //"${make_dirs}".split(',').each {
+                            //    sh "cd ${it} && make coverage-cobertura"
+                            //}
+                       //     catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+                       //         publishCoverage (
+                       //             adapters: [
+                       //                 istanbulCoberturaAdapter(
+                       //                     path: '**.results/gcovr_coverage.xml',
+                       //                     mergeToOneReport: false,
+                       //                     thresholds: [[failUnhealthy: true, thresholdTarget: 'Line', unhealthyThreshold: threshold_coverage_line_perc, unstableThreshold: threshold_coverage_line_perc]]
+                       //                 )
+                       //             ],
+                       //             failUnhealthy: true,
+                       //             failUnstable: true
+                       //         )
+                       //     }
+                            //            path: "**/build/coverage_cobertura_summary.xml",
+                            //      cp projects/.results/gcovr_coverage.xml .results/gcovr_coverage.xml
+                            //publishCoverage (
+                            //    adapters: [
+                            //        cobertura(
+                            //            path: '**.results/gcovr_coverage.xml',
+                            //            mergeToOneReport: true,
+                            //            thresholds: [[failUnhealthy: false, thresholdTarget: 'Line', unhealthyThreshold: threshold_coverage_line_perc, unstableThreshold: threshold_coverage_line_perc],
+                            //                         [failUnhealthy: false, thresholdTarget: 'Branch', unhealthyThreshold: threshold_coverage_branch_perc, unstableThreshold: threshold_coverage_branch_perc]
+                            //            ]
+                            //        )
+                            //    ],
+                            //    applyThresholdRecursively: true,
+                            //    sourceFileResolver: sourceFiles('STORE_ALL_BUILD'),
+                            //    failBuildIfCoverageDecreasedInChangeRequest: false,
+                            //    failNoReports: false,
+                            //    failUnhealthy: false,
+                            //    failUnstable: false
+                            //)
                         }
                     }
                 }

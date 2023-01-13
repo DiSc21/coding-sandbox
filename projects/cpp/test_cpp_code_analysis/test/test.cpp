@@ -17,7 +17,10 @@
 //     }
 // };
 //
-TEST(ObjectBase_, trueEqTrue) { EXPECT_FALSE(false); }
+TEST(ObjectBase_, trueEqTrue)
+{
+    EXPECT_FALSE(true);
+}
 // TEST(ObjectBase_, disable)
 //{
 //     auto objects = TestFacMeth::createObjects();

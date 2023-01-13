@@ -1,5 +1,10 @@
 #!/bin/bash
 
+echo "--------------------------------------------------"
+echo "------------------- CPPCHECK ---------------------"
+echo "--------------------------------------------------"
+echo $@
+
 source $(dirname "${BASH_SOURCE[0]}")/config.sh
 result_dir=$abs_root_dir"/projects/.results"
 

@@ -59,7 +59,7 @@ pipeline {
                 echo 'Building Docker ...'
                 sh ".docker/start_docker.sh"
                 echo 'Make results directory ...'
-                sh "mkdir .results"
+                sh "if [[ ! -d ".results/" ]]; then mkdir .results; fi"
                 echo "Build directories: ${make_dirs}"
             }
         }

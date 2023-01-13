@@ -4,13 +4,27 @@
 #include <iostream>
 #include <memory>
 #include <vector>
+#include <cstring>
 
 /// @brief who cares
 class ObjectBase_
 {
   public:
-    //    /// @brief just some pure virtual test function
-    //    virtual uint16_t doWhatNeedsToBeDone() const = 0;
+    /// @brief just some pure virtual test function
+    [[nodiscard]] auto doWhatNeedsToBeDone() -> uint16_t const
+    {
+        int unused_size = 100;
+        if (false)
+        {
+            unused_size = unused_size/0;
+        }
+        char temp[100];
+        char str[10] = "hello";
+        std::strcpy(temp, str);
+        printf("%s", temp);
+
+        return uint16_t(20);
+    }
     //
     //    /// @brief simple test function for forEach-lambda return by reference
     //    /// @param vec simple vector of bools

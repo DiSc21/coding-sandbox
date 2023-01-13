@@ -57,8 +57,10 @@ pipeline {
         stage('Build Docker') {
             steps {
                 echo 'Building Docker ...'
-                echo "Build directories: ${make_dirs}"
                 sh ".docker/start_docker.sh"
+                echo 'Make results directory ...'
+                sh "rm -rf .results || true; mkdir .results"
+                echo "Build directories: ${make_dirs}"
             }
         }
         stage('GCC/Clang Build') {
@@ -286,7 +288,7 @@ pipeline {
             publishHTML target: ([ allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true,
                                    reportDir: '.results', reportFiles: 'flawfinder.html',
                                    reportName: 'Flawfinder HTML-Report'])
-            sh ".docker/start_docker.sh"
+            sh ".docker/stop_docker.sh"
         }
     }
 }

@@ -10,12 +10,13 @@ then
         --volume /etc/group:/etc/group:ro \
         --volume /var/run/docker.sock:/var/run/docker.sock \
         --user $(id -u) \
+        --net=host \
         --env="DISPLAY" \
-        -v $(pwd):/ws \
-        -w /ws \
+        -v $abs_root_dir:$abs_root_dir \
+        -w $(pwd) \
         $dockername /bin/bash -c "touch /tmp/docker_started; sleep infinity"
 else
-    if [[ $(docker exec -it ${name} /bin/bash -c "test -e /tmp/docker_started && echo ${safe_word}") == ${safe_word}* ]]
+    if [[ $(docker exec -i ${name} /bin/bash -c "test -e /tmp/docker_started && echo ${safe_word}") == ${safe_word}* ]]
     then
         echo "[INFO] Docker was already started. If you want to restart call 'make restart'"
     else

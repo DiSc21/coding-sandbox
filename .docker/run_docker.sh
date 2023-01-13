@@ -1,9 +1,10 @@
 #!/bin/bash
 
-source $(dirname "${BASH_SOURCE[0]}")/build_docker.sh
+source $(dirname "${BASH_SOURCE[0]}")/config.sh
 
 if ! [[ $(docker ps | grep ${name}) ]]
 then
+    source $(dirname "${BASH_SOURCE[0]}")/build_docker.sh
     docker run -i --rm --name ${name} \
         --volume="$HOME/.Xauthority:/root/.Xauthority:rw" \
         --volume /etc/passwd:/etc/passwd:ro \

@@ -48,11 +48,11 @@ coverage:
 
 .PHONY: coverage-html
 coverage-html:
-	${cmd} "cd build; gcovr -r ../ . --exclude-throw-branches --exclude-unreachable-branches --html --html-details -o example_html_details.html"
+	${cmd} "cd build; gcovr -r ../ . --exclude-throw-branches --exclude-unreachable-branches --html --html-details -o coverage_html_details.html"
 
 .PHONY: coverage-cobertura
 coverage-cobertura:
-	${cmd} "cd build; gcovr -r ../ . --exclude-throw-branches --exclude-unreachable-branches --xml -o example_cobertura_summary.xml"
+	${cmd} "cd build; gcovr -r ../ . --exclude-throw-branches --exclude-unreachable-branches --xml -o coverage_cobertura_summary.xml"
 
 .PHONY: cppcheck
 cppcheck:
@@ -69,8 +69,8 @@ clang-tidy:
 
 .PHONY: flawfinder
 flawfinder:
-	${cmd} "flawfinder --html --context ./src 2>&1 | tee -a build/flawfinder.html"
-	${cmd} "flawfinder --context ./src 2>&1 | tee -a build/flawfinder.log"
+	${cmd} "flawfinder --html --context --singleline ./src 2>&1 | tee -a build/flawfinder.html"
+	${cmd} "flawfinder --context --singleline ./src 2>&1 | tee -a build/flawfinder.log"
 
 #--------------------------------
 # clean targets for gcc and clang

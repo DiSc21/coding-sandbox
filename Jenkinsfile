@@ -31,6 +31,10 @@ pipeline {
         def threshold_cmake = 1
         def threshold_clang = 1
         def threshold_gcc = 1
+
+        // def env for project source directories
+        // --------------------------------------
+        def make_dirs_roots = 'projects/cpp'
     }
     parameters {
         // Select build type via Jenkins coices
@@ -57,24 +61,24 @@ pipeline {
         stage('Build Docker') {
             steps {
                 script {
+                    // build docker image and clean up
+                    // -------------------------------
                     echo 'Building Docker ...'
                     sh ".docker/start_docker.sh"
                     echo 'Make results directory ...'
                     sh "rm -rf .results || true; mkdir .results"
-                    if(params.build_type == 'TestCodeAnalysis') {
-                        def make_dirs_roots = 'projects/cpp/test_cpp_code_analysis'
-                        env.make_dirs_roots = make_dirs_roots
-                        def make_dirs = sh(script: ".docker/find_make_directories.sh ${make_dirs_roots}", returnStdout: true).trim()
-                        env.make_dirs = make_dirs
 
+                    // TestCodeAnalysis -> copy dirty code to projects/cpp
+                    // ---------------------------------------------------
+                    if(params.build_type == 'TestCodeAnalysis') {
+                        sh "cp -r projects/test_jenkins_fail/cpp_code_analyis/ projects/cpp/"
                     }
-                    else {
-                        def make_dirs_roots = 'projects/cpp/design_patterns'
-                        env.make_dirs_roots = make_dirs_roots
-                        def make_dirs = sh(script: ".docker/find_make_directories.sh ${make_dirs_roots}", returnStdout: true).trim()
-                        env.make_dirs = make_dirs
-                    }
+                    def make_dirs = sh(script: ".docker/find_make_directories.sh ${make_dirs_roots}", returnStdout: true).trim()
+                    env.make_dirs = make_dirs
                     echo "Build directories: ${make_dirs}"
+
+                    // probably not neccessary
+                    // -----------------------
                     "${make_dirs}".split(',').each {
                         sh "cd ${it} && make clean"
                     }

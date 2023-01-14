@@ -16,6 +16,11 @@
 /* Requires the Docker Pipeline plugin */
 pipeline {
     agent any
+    options {
+        // This is required if you want to clean before build
+        // --------------------------------------------------
+        skipDefaultCheckout(true)
+    }
     environment {
         // thresholds for various code analysis tools
         // ------------------------------------------
@@ -61,6 +66,13 @@ pipeline {
         stage('Build Docker') {
             steps {
                 script {
+                    // Clean before build and explicitly (!!!) checkout from SCM here
+                    // --------------------------------------------------------------
+                    echo 'Clean Workspace ...'
+                    cleanWs()
+                    echo 'Checkout from SCM ...'
+                    checkout scm
+
                     // build docker image and clean up
                     // -------------------------------
                     echo 'Building Docker ...'
